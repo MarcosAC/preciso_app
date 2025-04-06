@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "345717276418",
+    "firebase_url": "https://presicoapp-default-rtdb.firebaseio.com",
+    "project_id": "presicoapp",
+    "storage_bucket": "presicoapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:345717276418:android:6ceb04cc2023c9934e8c1b",
+        "android_client_info": {
+          "package_name": "com.example.preciso"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "345717276418-8sk0sit4vu1emite34g54ahbvlc28dv0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqUwtIM3beoh11HxNzAXSG8Cs6ALw-eL4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "345717276418-8sk0sit4vu1emite34g54ahbvlc28dv0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

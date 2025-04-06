@@ -2,21 +2,51 @@ import 'package:preciso/domain/entities/service_entity.dart';
 import 'package:preciso/domain/repositories/service_repository_interface.dart';
 
 class GetClientRequestsUseCase {
-  final IServiceRepository repository;
+  final IServiceRepository _repository;
 
-  GetClientRequestsUseCase(this.repository);
+  GetClientRequestsUseCase(this._repository);
 
   Stream<List<ServiceEntity>> call(String clientId) {
-    return repository.getClientRequests(clientId);
+    return _repository.getClientRequests(clientId);
+  }
+}
+
+class GetAvailableRequestsUseCase {
+  final IServiceRepository _repository;
+
+  GetAvailableRequestsUseCase(this._repository);
+
+  Stream<List<ServiceEntity>> call(String serviceType) {
+    return _repository.getAvailableRequests(serviceType);
   }
 }
 
 class CreateServiceRequestUseCase {
-  final IServiceRepository repository;
+  final IServiceRepository _repository;
 
-  CreateServiceRequestUseCase(this.repository);
+  CreateServiceRequestUseCase(this._repository);
 
   Future<void> call(ServiceEntity request) {
-    return repository.createServiceRequest(request);
+    return _repository.createServiceRequest(request);
+  }
+}
+
+class UpdateRequestStatusUseCase {
+  final IServiceRepository _repository;
+
+  UpdateRequestStatusUseCase(this._repository);
+
+  Future<void> call(String requestId, String status) {
+    return _repository.updateRequestStatus(requestId, status);
+  }
+}
+
+class RateProfessionalUseCase {
+  final IServiceRepository _repository;
+
+  RateProfessionalUseCase(this._repository);
+
+  Future<void> call(String professionalId, double rating) {
+    return _repository.rateProfessional(professionalId, rating);
   }
 }

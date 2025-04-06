@@ -7,10 +7,10 @@ class RequestServiceView extends StatefulWidget {
   const RequestServiceView({super.key});
 
   @override
-  _RequestServiceViewState createState() => _RequestServiceViewState();
+  RequestServiceViewState createState() => RequestServiceViewState();
 }
 
-class _RequestServiceViewState extends State<RequestServiceView> {
+class RequestServiceViewState extends State<RequestServiceView> {
   final _formKey = GlobalKey<FormState>();
   String _selectedService = 'Eletricista';
   final _descriptionController = TextEditingController();
@@ -108,12 +108,12 @@ class _RequestServiceViewState extends State<RequestServiceView> {
                 onPressed: serviceViewModel.isLoading
                     ? null
                     : () => _submitRequest(serviceViewModel),
-                child: serviceViewModel.isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Solicitar Profissional'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),
+                child: serviceViewModel.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Solicitar Profissional'),
               ),
             ],
           ),
@@ -126,22 +126,64 @@ class _RequestServiceViewState extends State<RequestServiceView> {
     if (_formKey.currentState!.validate()) {
       final request = ServiceEntity(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        clientId: '', // Será preenchido no ViewModel
+        clientId: '',
         professionalId: '',
         serviceType: _selectedService,
         description: _descriptionController.text,
         address: _addressController.text,
         requestDate: DateTime.now(),
+        status: 'pending',
       );
 
-      await serviceViewModel.createServiceRequest(request);
-      
-      if (!serviceViewModel.isLoading && serviceViewModel.errorMessage == null) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Solicitação enviada com sucesso!')),
-        );
-      }
+      await serviceViewModel.createServiceRequestWithCallback(
+        request,
+        onSuccess: () {
+          if (mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Solicitação enviada com sucesso!')),
+            );
+          }
+        },
+        onError: (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erro: $error')),
+            );
+          }
+        },
+      );
     }
   }
+
+  // Future<void> _submitRequest(ServiceViewModel serviceViewModel) async {
+  //   if (_formKey.currentState!.validate()) {
+  //     final request = ServiceEntity(
+  //       id: DateTime.now().millisecondsSinceEpoch.toString(),
+  //       clientId: '',
+  //       professionalId: '',
+  //       serviceType: _selectedService,
+  //       description: _descriptionController.text,
+  //       address: _addressController.text,
+  //       requestDate: DateTime.now(),
+  //       status: 'pending',
+  //     );
+
+  //     try {
+  //       await serviceViewModel.createServiceRequest(request);
+  //       if (mounted) {
+  //         Navigator.pop(context);
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(content: Text('Solicitação enviada com sucesso!')),
+  //         );
+  //       }
+  //     } catch (e) {
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text('Erro: ${e.toString()}')),
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 }
