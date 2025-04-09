@@ -175,8 +175,7 @@ class RegisterViewState extends State<RegisterView> {
 
   Future<void> _register(AuthViewModel authViewModel) async {
     if (_formKey.currentState!.validate()) {
-      // Você pode adicionar aqui a lógica para registrar como profissional se necessário
-      await authViewModel.registerClient(
+        await authViewModel.registerClient(
         _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text.trim(),

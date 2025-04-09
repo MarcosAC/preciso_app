@@ -17,10 +17,11 @@ import 'package:preciso/presentation/viewmodels/user_viewmodel.dart';
 import 'package:preciso/presentation/views/auth/login_view.dart';
 import 'package:preciso/presentation/views/client/home_client_view.dart';
 import 'package:preciso/presentation/views/professional/home_professional_view.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   Provider.debugCheckInvalidValueType = null;
   runApp(const MyApp());
 }
