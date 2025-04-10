@@ -20,7 +20,7 @@ class AuthRepository implements IAuthRepository {
   }
 
   @override
-  Future<UserEntity?> login(String email, String password) async {
+  Future<UserEntity?> login({required String email, required String password}) async {
     try {
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -124,7 +124,7 @@ class AuthRepository implements IAuthRepository {
   }
 
   @override
-  Future<void> sendPasswordResetEmail(String email) async {
+  Future<void> sendPasswordResetEmail({required String email}) async {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {

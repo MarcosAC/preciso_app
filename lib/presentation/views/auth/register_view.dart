@@ -176,10 +176,10 @@ class RegisterViewState extends State<RegisterView> {
   Future<void> _register(AuthViewModel authViewModel) async {
     if (_formKey.currentState!.validate()) {
         await authViewModel.registerClient(
-        _nameController.text.trim(),
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-        _phoneController.text.trim(),
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        phone: _phoneController.text.trim(),
       );
     }
   }

@@ -6,8 +6,14 @@ class LoginUseCase {
 
   LoginUseCase(this._repository);
 
-  Future<UserEntity?> call(String email, String password) async {
-    return await _repository.login(email, password);
+  Future<UserEntity?> call({
+    required String email,
+    required String password,
+  }) async {
+    return await _repository.login(
+      email: email,
+      password: password,
+    );
   }
 }
 
@@ -16,34 +22,79 @@ class RegisterClientUseCase {
 
   RegisterClientUseCase(this._repository);
 
-  Future<UserEntity?> call(String name, String email, String password, String phone) async {
-    return await _repository.registerClient(name, email, password, phone);
+  Future<UserEntity?> call({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    String? photoUrl,
+  }) async {
+    return await _repository.registerClient(
+      name: name,
+      email: email,
+      password: password,
+      phone: phone,
+      photoUrl: photoUrl,
+    );
   }
 }
 
+// class RegisterProfessionalUseCase {
+//   final IAuthRepository _repository;
+
+//   RegisterProfessionalUseCase(this._repository);
+
+//   Future<UserEntity?> call({
+//     required String name,
+//     required String email,
+//     required String password,
+//     required String phone,
+//     required String profession,
+//     List<String>? services,
+//     String? photoUrl,
+//   }) async {
+//     return await _repository.registerProfessional(
+//       name: name,
+//       email: email,
+//       password: password,
+//       phone: phone,
+//       profession: profession,
+//       services: services,
+//       photoUrl: photoUrl,
+//     );
+//   }
+// }
+
 class LogoutUseCase {
   final IAuthRepository _repository;
+  
   LogoutUseCase(this._repository);
+  
   Future<void> call() => _repository.logout();
 }
 
-// class GetAvailableRequestsUseCase {
-//   final IServiceRepository _repository;
-//   GetAvailableRequestsUseCase(this._repository);
-//   Stream<List<ServiceEntity>> call(String serviceType) => 
-//       _repository.getAvailableRequests(serviceType);
-// }
+class SendPasswordResetEmailUseCase {
+  final IAuthRepository _repository;
 
-// class UpdateRequestStatusUseCase {
-//   final IServiceRepository _repository;
-//   UpdateRequestStatusUseCase(this._repository);
-//   Future<void> call(String requestId, String status) => 
-//       _repository.updateRequestStatus(requestId, status);
-// }
+  SendPasswordResetEmailUseCase(this._repository);
 
-// class RateProfessionalUseCase {
-//   final IServiceRepository _repository;
-//   RateProfessionalUseCase(this._repository);
-//   Future<void> call(String professionalId, double rating) => 
-//       _repository.rateProfessional(professionalId, rating);
-// }
+  Future<void> call({required String email}) {
+    return _repository.sendPasswordResetEmail(email: email);
+  }
+}
+
+class UpdateEmailUseCase {
+  final IAuthRepository _repository;
+
+  UpdateEmailUseCase(this._repository);
+
+  Future<void> call({
+    required String newEmail,
+    required String currentPassword,
+  }) {
+    return _repository.updateEmail(
+      newEmail: newEmail,
+      password: currentPassword,
+    );
+  }
+}

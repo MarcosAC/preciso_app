@@ -4,7 +4,7 @@ abstract class IAuthRepository {
   // Stream que emite o usuário atual (null se deslogado)
   Stream<UserEntity?> get user;
   
-  Future<UserEntity?> login(String email, String password);
+  Future<UserEntity?> login({required String email,required String password});
     
   Future<UserEntity?> registerClient({
     required String name,
@@ -27,7 +27,7 @@ abstract class IAuthRepository {
   Future<void> logout();
 
   // Recuperação de senha (novo método)
-  Future<void> sendPasswordResetEmail(String email);
+  Future<void> sendPasswordResetEmail({required String email});
 
   // Atualiza email do usuário logado (novo método)
   Future<void> updateEmail({

@@ -8,7 +8,7 @@ import 'package:preciso/data/repositories/auth_repository.dart';
 import 'package:preciso/data/repositories/service_repository.dart';
 import 'package:preciso/data/repositories/user_repository.dart';
 import 'package:preciso/domain/usecases/auth_usecases.dart';
-import 'package:preciso/domain/usecases/service_usecases.dart'; // Importação adicionada
+import 'package:preciso/domain/usecases/service_usecases.dart';
 import 'package:preciso/domain/usecases/user_usecases.dart';
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';

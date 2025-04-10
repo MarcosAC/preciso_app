@@ -20,38 +20,37 @@ class UserRepository implements IUserRepository {
         _storage = storage ?? FirebaseStorage.instance;
 
   @override
-Future<List<UserModel>> getProfessionalsByService(String serviceType) async {
-  try {
-    final querySnapshot = await _firestore
-        .collection('users')
-        .where('isProfessional', isEqualTo: true)
-        .where('services', arrayContains: serviceType) // Assumindo estrutura de array
-        .get();
+  Future<List<UserModel>> getProfessionalsByService(String serviceType) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('isProfessional', isEqualTo: true)
+          .where('services', arrayContains: serviceType)
+          .get();
 
-    return querySnapshot.docs
-        .map((doc) => UserModel(
-              uid: doc.id,
-              name: doc.data()['name'] ?? '',
-              email: doc.data()['email'] ?? '',
-              phone: doc.data()['phone'] ?? '',
-              isProfessional: doc.data()['isProfessional'] ?? false,
-              profession: doc.data()['profession'],
-              rating: (doc.data()['rating'] ?? 0).toDouble(),
-              completedServices: doc.data()['completedServices'] ?? 0,
-              photoUrl: doc.data()['photoUrl'],
-            ))
-        .toList();
-  } catch (e) {
-    throw Exception('Failed to load professionals: $e');
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return UserModel.fromMap({
+          'uid': doc.id,
+          ...data,
+          'createdAt': data['createdAt']?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
+        });
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to load professionals: $e');
+    }
   }
-}
 
   @override
   Future<UserEntity?> getUserById(String userId) async {
     try {
       final doc = await _firestore.collection('users').doc(userId).get();
       if (doc.exists) {
-        return UserModel.fromMap(doc.data()!).toEntity();
+        return UserModel.fromMap({
+          'uid': doc.id,
+          ...doc.data()!,
+          'createdAt': doc.data()!['createdAt']?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
+        }).toEntity();
       }
       return null;
     } catch (e) {
@@ -62,10 +61,9 @@ Future<List<UserModel>> getProfessionalsByService(String serviceType) async {
   @override
   Future<void> updateUser(UserEntity user) async {
     try {
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .update(UserModel.fromEntity(user).toMap());
+      await _firestore.collection('users').doc(user.uid).update(
+        UserModel.fromEntity(user).toMap()
+      );
     } catch (e) {
       throw Exception('Failed to update user: $e');
     }
@@ -78,6 +76,8 @@ Future<List<UserModel>> getProfessionalsByService(String serviceType) async {
     required String password,
     required String phone,
     required String profession,
+    List<String>? services,
+    String? photoUrl,
   }) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -94,14 +94,14 @@ Future<List<UserModel>> getProfessionalsByService(String serviceType) async {
         phone: phone,
         isProfessional: true,
         profession: profession,
+        services: services ?? [],
         rating: 0,
         completedServices: 0,
+        photoUrl: photoUrl,
+        createdAt: DateTime.now(),
       );
 
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .set(user.toMap());
+      await _firestore.collection('users').doc(user.uid).set(user.toMap());
 
       return user.toEntity();
     } catch (e) {
@@ -114,13 +114,12 @@ Future<List<UserModel>> getProfessionalsByService(String serviceType) async {
     try {
       final ref = _storage.ref().child('profile_images/$userId.jpg');
       await ref.putFile(File(imagePath));
-
       final imageUrl = await ref.getDownloadURL();
       
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .update({'photoUrl': imageUrl});
+      await _firestore.collection('users').doc(userId).update({
+        'photoUrl': imageUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
       return imageUrl;
     } catch (e) {

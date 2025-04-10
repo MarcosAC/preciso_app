@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/domain/usecases/auth_usecases.dart';
@@ -9,6 +9,7 @@ class AuthViewModel with ChangeNotifier {
   late RegisterClientUseCase registerClientUseCase;
   late LogoutUseCase logoutUseCase;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -30,24 +31,45 @@ class AuthViewModel with ChangeNotifier {
     return _auth.authStateChanges().asyncMap((firebaseUser) async {
       if (firebaseUser == null) return null;
       
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(firebaseUser.uid)
-          .get();
+      final snapshot = await _dbRef.child('users/${firebaseUser.uid}').get();
+      
+      if (!snapshot.exists) {
+        return UserEntity(
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName ?? '',
+          email: firebaseUser.email ?? '',
+          phone: firebaseUser.phoneNumber ?? '',
+          isProfessional: false,
+          createdAt: DateTime.now(),
+        );
+      }
 
-      if (!userDoc.exists) return null;
-          
-      return UserEntity.fromFirestore(userDoc);
+      final userData = Map<String, dynamic>.from(snapshot.value as Map);
+      
+      return UserEntity(
+        uid: firebaseUser.uid,
+        name: userData['name'] ?? firebaseUser.displayName ?? '',
+        email: userData['email'] ?? firebaseUser.email ?? '',
+        phone: userData['phone'] ?? firebaseUser.phoneNumber ?? '',
+        isProfessional: userData['isProfessional'] ?? false,
+        profession: userData['profession'],
+        rating: (userData['rating'] ?? 0).toDouble(),
+        completedServices: userData['completedServices'] ?? 0,
+        photoUrl: userData['photoUrl'],
+        createdAt: userData['createdAt'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(userData['createdAt'] as int)
+            : DateTime.now(),
+      );
     });
   }
 
-  Future<UserEntity?> login(String email, String password) async {
+  Future<UserEntity?> login({required String email, required String password}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final user = await loginUseCase(email, password);
+      final user = await loginUseCase(email: email, password: password);
       _isLoading = false;
       notifyListeners();
       return user;
@@ -59,18 +81,25 @@ class AuthViewModel with ChangeNotifier {
     }
   }
 
-  Future<UserEntity?> registerClient(
-    String name,
-    String email,
-    String password,
-    String phone,
-  ) async {
+  Future<UserEntity?> registerClient({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    String? photoUrl,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final user = await registerClientUseCase(name, email, password, phone);
+      final user = await registerClientUseCase(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        photoUrl: photoUrl,
+      );
       _isLoading = false;
       notifyListeners();
       return user;

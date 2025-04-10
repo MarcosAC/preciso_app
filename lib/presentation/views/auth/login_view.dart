@@ -183,8 +183,8 @@ class LoginViewState extends State<LoginView> {
   Future<void> _login(AuthViewModel authViewModel) async {
     if (_formKey.currentState!.validate()) {
       await authViewModel.login(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
     }
   }
