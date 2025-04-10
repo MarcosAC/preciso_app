@@ -1,16 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/domain/repositories/auth_repository_interface.dart';
 
 class AuthRepository implements IAuthRepository {
   final FirebaseAuth _firebaseAuth;
+  final DatabaseReference _dbRef;
 
-  AuthRepository({FirebaseAuth? firebaseAuth})
-      : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+  AuthRepository({FirebaseAuth? firebaseAuth, DatabaseReference? dbRef})
+    : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
+      _dbRef = dbRef ?? FirebaseDatabase.instance.ref();
 
   @override
   Stream<UserEntity?> get user {
-    return _firebaseAuth.authStateChanges().asyncMap(_userFromFirebase);
+    return _firebaseAuth.authStateChanges().asyncMap((firebaseUser) async {
+      if (firebaseUser == null) return null;
+      return _fetchUserData(firebaseUser);
+    });
   }
 
   @override
@@ -20,28 +26,91 @@ class AuthRepository implements IAuthRepository {
         email: email,
         password: password,
       );
-      return _userFromFirebase(userCredential.user);
+      return _fetchUserData(userCredential.user!);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthError(e);
     } catch (e) {
-      throw Exception('Login failed: $e');
+      throw Exception('Falha no login: ${e.toString()}');
     }
   }
 
   @override
-  Future<UserEntity?> registerClient(
-    String name,
-    String email,
-    String password,
-    String phone,
-  ) async {
+  Future<UserEntity?> registerClient({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    String? photoUrl,
+  }) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
       await userCredential.user?.updateDisplayName(name);
-      return _userFromFirebase(userCredential.user, phone: phone);
+
+      final userData = {
+        'uid': userCredential.user!.uid,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'photoUrl': photoUrl,
+        'isProfessional': false,
+        'createdAt': ServerValue.timestamp,
+        'rating': 0,
+        'completedServices': 0,
+      };
+
+      await _dbRef.child('users/${userCredential.user!.uid}').set(userData);
+
+      return UserEntity.fromMap({'uid': userCredential.user!.uid, ...userData});
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthError(e);
     } catch (e) {
-      throw Exception('Registration failed: $e');
+      throw Exception('Falha no cadastro: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<UserEntity?> registerProfessional({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required String profession,
+    List<String>? services,
+    String? photoUrl,
+  }) async {
+    try {
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      await userCredential.user?.updateDisplayName(name);
+
+      final userData = {
+        'uid': userCredential.user!.uid,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'photoUrl': photoUrl,
+        'isProfessional': true,
+        'profession': profession,
+        'services': services ?? [],
+        'createdAt': ServerValue.timestamp,
+        'rating': 0,
+        'completedServices': 0,
+      };
+
+      await _dbRef.child('users/${userCredential.user!.uid}').set(userData);
+
+      return UserEntity.fromMap({'uid': userCredential.user!.uid, ...userData});
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthError(e);
+    } catch (e) {
+      throw Exception('Falha no cadastro profissional: ${e.toString()}');
     }
   }
 
@@ -50,19 +119,92 @@ class AuthRepository implements IAuthRepository {
     try {
       await _firebaseAuth.signOut();
     } catch (e) {
-      throw Exception('Logout failed: $e');
+      throw Exception('Falha ao sair: ${e.toString()}');
     }
   }
 
-  UserEntity? _userFromFirebase(User? user, {String phone = ''}) {
-    if (user == null) return null;
-    
-    return UserEntity(
-      uid: user.uid,
-      name: user.displayName ?? '',
-      email: user.email ?? '',
-      phone: user.phoneNumber ?? phone,
-      isProfessional: false,
-    );
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthError(e);
+    }
+  }
+
+  @override
+  Future<void> updateEmail({
+    required String newEmail,
+    required String password,
+  }) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user == null) throw Exception('Usuário não autenticado');
+
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      await user.verifyBeforeUpdateEmail(newEmail);
+      await _dbRef.child('users/${user.uid}/email').set(newEmail);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthError(e);
+    }
+  }
+
+  Future<UserEntity> _fetchUserData(User firebaseUser) async {
+    try {
+      final snapshot = await _dbRef.child('users/${firebaseUser.uid}').get();
+
+      if (!snapshot.exists) {
+        return UserEntity(
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName ?? '',
+          email: firebaseUser.email ?? '',
+          phone: firebaseUser.phoneNumber ?? '',
+          isProfessional: false,
+          createdAt: DateTime.now(),
+          services: [],
+          rating: 0,
+          completedServices: 0,
+        );
+      }
+
+      final userData = Map<String, dynamic>.from(snapshot.value as Map);
+
+      return UserEntity.fromMap({
+        'uid': firebaseUser.uid,
+        ...userData,        
+        'createdAt':
+            userData['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
+      });
+    } catch (e) {
+      throw Exception('Failed to fetch user data: ${e.toString()}');
+    }
+  }
+
+  Exception _handleAuthError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-email':
+        return Exception('Email inválido');
+      case 'user-disabled':
+        return Exception('Usuário desativado');
+      case 'user-not-found':
+        return Exception('Usuário não encontrado');
+      case 'wrong-password':
+        return Exception('Senha incorreta');
+      case 'email-already-in-use':
+        return Exception('Email já cadastrado');
+      case 'weak-password':
+        return Exception('Senha fraca (mínimo 6 caracteres)');
+      case 'operation-not-allowed':
+        return Exception('Operação não permitida');
+      case 'requires-recent-login':
+        return Exception('Reautenticação necessária');
+      default:
+        return Exception(e.message ?? 'Erro desconhecido');
+    }
   }
 }
