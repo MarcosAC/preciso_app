@@ -37,7 +37,6 @@ class LoginViewState extends State<LoginView> {
             child: Column(
               children: [
                 const Spacer(flex: 2),
-                // Logo/Title with Icon
                 const Icon(Icons.handyman, size: 80, color: Colors.blue),
                 const SizedBox(height: 8),
                 Text(
@@ -53,7 +52,6 @@ class LoginViewState extends State<LoginView> {
                   style: theme.textTheme.titleMedium,
                 ),
                 const Spacer(),
-                // Form
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -72,7 +70,6 @@ class LoginViewState extends State<LoginView> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          // Error Message
                           if (authViewModel.errorMessage != null)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 16),
@@ -84,7 +81,6 @@ class LoginViewState extends State<LoginView> {
                                 textAlign: TextAlign.center,
                               ),
                             ),
-                          // Email Field
                           TextFormField(
                             controller: _emailController,
                             decoration: const InputDecoration(
@@ -105,7 +101,6 @@ class LoginViewState extends State<LoginView> {
                             onChanged: (_) => authViewModel.resetError(),
                           ),
                           const SizedBox(height: 16),
-                          // Password Field
                           TextFormField(
                             controller: _passwordController,
                             decoration: const InputDecoration(
@@ -126,7 +121,6 @@ class LoginViewState extends State<LoginView> {
                             onChanged: (_) => authViewModel.resetError(),
                           ),
                           const SizedBox(height: 24),
-                          // Login Button
                           SizedBox(
                             width: double.infinity,
                             height: 50,
@@ -150,7 +144,6 @@ class LoginViewState extends State<LoginView> {
                   ),
                 ),
                 const Spacer(),
-                // Register Option
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
