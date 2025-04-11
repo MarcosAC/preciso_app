@@ -49,7 +49,7 @@ class AuthRepository implements IAuthRepository {
       );
 
       await userCredential.user?.updateDisplayName(name);
-
+      
       final userData = {
         'uid': userCredential.user!.uid,
         'name': name,
@@ -64,7 +64,10 @@ class AuthRepository implements IAuthRepository {
 
       await _dbRef.child('users/${userCredential.user!.uid}').set(userData);
 
-      return UserEntity.fromMap({'uid': userCredential.user!.uid, ...userData});
+      return UserEntity.fromMap({
+        'uid': userCredential.user!.uid, ...userData,
+        'createdAt': DateTime.now(), // Valor temporário até ser atualizado pelo servidor
+      });
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
     } catch (e) {
@@ -174,11 +177,23 @@ class AuthRepository implements IAuthRepository {
 
       final userData = Map<String, dynamic>.from(snapshot.value as Map);
 
+      // Convertendo o timestamp do Firebase para DateTime
+      dynamic createdAt = userData['createdAt'];
+      DateTime createdAtDate;
+      
+      if (createdAt is int) {
+        createdAtDate = DateTime.fromMillisecondsSinceEpoch(createdAt);
+      } else if (createdAt == null) {
+        createdAtDate = DateTime.now();
+      } else {
+        // Se for outro tipo inesperado, usa a data atual
+        createdAtDate = DateTime.now();
+      }
+
       return UserEntity.fromMap({
         'uid': firebaseUser.uid,
         ...userData,        
-        'createdAt':
-            userData['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
+        'createdAt': createdAtDate,
       });
     } catch (e) {
       throw Exception('Failed to fetch user data: ${e.toString()}');
