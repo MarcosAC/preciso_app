@@ -193,7 +193,7 @@ class AuthRepository implements IAuthRepository {
       return UserEntity.fromMap({
         'uid': firebaseUser.uid,
         ...userData,        
-        'createdAt': createdAtDate,
+        'createdAt': createdAtDate
       });
     } catch (e) {
       throw Exception('Failed to fetch user data: ${e.toString()}');

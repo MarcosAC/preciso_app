@@ -181,11 +181,35 @@ class LoginViewState extends State<LoginView> {
   }
 
   Future<void> _login(AuthViewModel authViewModel) async {
-    if (_formKey.currentState!.validate()) {
-      await authViewModel.login(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+  if (_formKey.currentState!.validate()) {
+    final user = await authViewModel.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+    
+    if (user != null && mounted) {
+      // Navegação baseada no tipo de usuário (exemplo)
+      if (user.isProfessional) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/profissional_home',
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/home_client',
+          (Route<dynamic> route) => false,
+        );
+      }
     }
   }
+}
+
+  // Future<void> _login(AuthViewModel authViewModel) async {
+  //   if (_formKey.currentState!.validate()) {
+  //     await authViewModel.login(
+  //       email: _emailController.text.trim(),
+  //       password: _passwordController.text.trim(),
+  //     );
+  //   }
+  // }
 }

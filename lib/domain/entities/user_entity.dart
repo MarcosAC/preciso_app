@@ -28,14 +28,11 @@ class UserEntity {
   });
 
   factory UserEntity.fromMap(Map<String, dynamic> map) {
-  dynamic createdAt = map['createdAt'];
-  DateTime createdAtDate;
-  
-  if (createdAt is DateTime) {
-    createdAtDate = createdAt;
-  } else {
-    createdAtDate = createdAt.toDateTime() ?? DateTime.now();
-  }
+  // Tratamento seguro do createdAt
+  final createdAt = map['createdAt'];
+  final createdAtDate = (createdAt is DateTime) 
+      ? createdAt 
+      : createdAt.toDateTime() ?? DateTime.now();
 
   return UserEntity(
     uid: map['uid'] as String,
@@ -51,6 +48,31 @@ class UserEntity {
     createdAt: createdAtDate,
   );
 }
+
+//   factory UserEntity.fromMap(Map<String, dynamic> map) {
+//   dynamic createdAt = map['createdAt'];
+//   DateTime createdAtDate;
+  
+//   if (createdAt is DateTime) {
+//     createdAtDate = createdAt;
+//   } else {
+//     createdAtDate = createdAt.toDateTime() ?? DateTime.now();
+//   }
+
+//   return UserEntity(
+//     uid: map['uid'] as String,
+//     name: map['name'] as String,
+//     email: map['email'] as String,
+//     phone: map['phone'] as String,
+//     isProfessional: map['isProfessional'] as bool? ?? false,
+//     profession: map['profession'] as String?,
+//     rating: (map['rating'] as num?)?.toDouble() ?? 0,
+//     completedServices: map['completedServices'] as int? ?? 0,
+//     photoUrl: map['photoUrl'] as String?,
+//     services: List<String>.from(map['services'] as List? ?? []),
+//     createdAt: createdAtDate,
+//   );
+// }
 
   Map<String, dynamic> toMap() {
     return {

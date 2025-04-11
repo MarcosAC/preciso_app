@@ -1,23 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 
-extension FirebaseTimestampExtensions on dynamic {
-  DateTime? toDateTime() {
+extension FirebaseTimestampConversion on dynamic {
+  DateTime? convertToDateTime() {
     if (this == null) return null;
     
-    // Se já for DateTime, retorna direto
     if (this is DateTime) {
       return this as DateTime;
     }
-    
-    if (this is int) {
+    else if (this is int) {
       return DateTime.fromMillisecondsSinceEpoch(this as int);
-    } else if (this is String) {
+    }
+    else if (this is String) {
       final milliseconds = int.tryParse(this as String);
       if (milliseconds != null) {
         return DateTime.fromMillisecondsSinceEpoch(milliseconds);
       }
-    } else if (this is Map && (this as Map)['.sv'] == 'timestamp') {
+    }
+    else if (this is Map && (this as Map)['.sv'] == 'timestamp') {
       return DateTime.now();
     }
     
