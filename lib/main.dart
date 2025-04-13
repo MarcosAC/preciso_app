@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:preciso/presentation/views/auth/register_view.dart';
 import 'package:provider/provider.dart';
 import 'package:preciso/data/repositories/auth_repository.dart';
 import 'package:preciso/data/repositories/service_repository.dart';
@@ -88,7 +89,7 @@ class MyApp extends StatelessWidget {
         ),
         
         ChangeNotifierProxyProvider<UserRepository, UserViewModel>(
-          create: (_) => UserViewModel(), // Now can be created without parameters
+          create: (_) => UserViewModel(),
           update: (_, userRepo, viewModel) => viewModel!..updateDependencies(
             getProfessionalsByServiceUseCase: GetProfessionalsByServiceUseCase(userRepo),
             getUserByIdUseCase: GetUserByIdUseCase(userRepo),
@@ -104,7 +105,15 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: const AuthWrapper(),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const AuthWrapper(),
+          '/login': (context) => const LoginView(),
+          '/home_client': (context) => const HomeClientView(),
+          '/home_professional': (context) => const HomeProfessionalView(),
+          '/register': (context) => const RegisterView(),
+        },
+        
         debugShowCheckedModeBanner: false,
       ),
     );
