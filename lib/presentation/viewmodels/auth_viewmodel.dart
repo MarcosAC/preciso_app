@@ -17,7 +17,37 @@ class AuthViewModel with ChangeNotifier {
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
+
+  // Getters para estado do usuário
+  User? get firebaseUser => _auth.currentUser;
   
+ UserEntity? get currentUser {
+    final user = firebaseUser;
+    return user != null 
+      ? UserEntity.fromFirebase(user: user, data: {}) 
+      : null;
+  }
+
+  Future<UserEntity?> getCurrentUserWithData() async {
+    final user = firebaseUser;
+    if (user == null) return null;
+
+    try {
+      final snapshot = await _dbRef.child('users/${user.uid}').get();
+      final data = snapshot.exists 
+          ? Map<String, dynamic>.from(snapshot.value as Map) 
+          : <String, dynamic>{};
+      
+      return UserEntity.fromFirebase(
+        user: user,
+        data: data,
+      );
+    } catch (e) {
+      debugPrint('Error fetching user data: $e');
+      return UserEntity.fromFirebaseUser(user);
+    }
+  }
+
   void updateDependencies({
     required LoginUseCase loginUseCase,
     required RegisterClientUseCase registerClientUseCase,
@@ -29,63 +59,37 @@ class AuthViewModel with ChangeNotifier {
   }
 
   Stream<UserEntity?> get userStream {
-  return _auth.authStateChanges().asyncMap((firebaseUser) async {
-    if (firebaseUser == null) return null;
-    
-    final snapshot = await _dbRef.child('users/${firebaseUser.uid}').get();
-    
-    if (!snapshot.exists) {
-      return UserEntity(
-        uid: firebaseUser.uid,
-        name: firebaseUser.displayName ?? '',
-        email: firebaseUser.email ?? '',
-        phone: firebaseUser.phoneNumber ?? '',
-        isProfessional: false,
-        createdAt: DateTime.now(),
-      );
-    }
+    return _auth.authStateChanges().asyncMap((firebaseUser) async {
+      if (firebaseUser == null) return null;
+      
+      try {
+        final snapshot = await _dbRef.child('users/${firebaseUser.uid}').get();
+        final userData = snapshot.exists 
+            ? Map<String, dynamic>.from(snapshot.value as Map) 
+            : <String, dynamic>{};
+        
+        return UserEntity.fromFirebase(
+          user: firebaseUser,
+          data: userData,
+        );
+      } catch (e) {
+        debugPrint('Error in userStream: $e');
+        return UserEntity.fromFirebaseUser(firebaseUser);
+      }
+    });
+  }
 
-    final userData = Map<String, dynamic>.from(snapshot.value as Map);
-    
-    dynamic createdAt = userData['createdAt'];
-    DateTime createdAtDate;
-    
-    if (createdAt is DateTime) {
-      createdAtDate = createdAt;
-    } else {
-      createdAtDate = createdAt.toDateTime() ?? DateTime.now();
-    }
-
-    return UserEntity(
-      uid: firebaseUser.uid,
-      name: userData['name'] ?? firebaseUser.displayName ?? '',
-      email: userData['email'] ?? firebaseUser.email ?? '',
-      phone: userData['phone'] ?? firebaseUser.phoneNumber ?? '',
-      isProfessional: userData['isProfessional'] ?? false,
-      profession: userData['profession'],
-      rating: (userData['rating'] ?? 0).toDouble(),
-      completedServices: userData['completedServices'] ?? 0,
-      photoUrl: userData['photoUrl'],
-      services: List<String>.from(userData['services'] ?? []),
-      createdAt: createdAtDate,
-    );
-  });
-}
-
-  Future<UserEntity?> login({required String email, required String password}) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
+  Future<UserEntity?> login({
+    required String email,
+    required String password,
+  }) async {
+    _setLoading(true);
     try {
       final user = await loginUseCase(email: email, password: password);
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
       return user;
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = e.toString();
-      notifyListeners();
+      _setError(e.toString());
       return null;
     }
   }
@@ -97,10 +101,7 @@ class AuthViewModel with ChangeNotifier {
     required String phone,
     String? photoUrl,
   }) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
+    _setLoading(true);
     try {
       final user = await registerClientUseCase(
         name: name,
@@ -109,14 +110,23 @@ class AuthViewModel with ChangeNotifier {
         phone: phone,
         photoUrl: photoUrl,
       );
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
       return user;
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = e.toString();
-      notifyListeners();
+      _setError(e.toString());
       return null;
+    }
+  }
+
+  Future<void> logout() async {
+    _setLoading(true);
+    try {
+      await logoutUseCase();
+      _errorMessage = null;
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -125,18 +135,15 @@ class AuthViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> logout() async {
-    _isLoading = true;
+  // Métodos privados para manipulação de estado
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
-    
-    try {
-      await logoutUseCase();
-      _errorMessage = null;
-    } catch (e) {
-      _errorMessage = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+  }
+
+  void _setError(String message) {
+    _errorMessage = message;
+    _isLoading = false;
+    notifyListeners();
   }
 }
