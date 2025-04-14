@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/presentation/views/auth/register_view.dart';
 import 'package:provider/provider.dart';
 import 'package:preciso/data/repositories/auth_repository.dart';
@@ -125,23 +126,52 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    final authViewModel = Provider.of<AuthViewModel>(context);
 
-    return StreamBuilder(
+    return StreamBuilder<UserEntity?>(
       stream: authViewModel.userStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active) {
-          if (snapshot.hasData && snapshot.data != null) {
-            return snapshot.data!.isProfessional
-                ? const HomeProfessionalView()
-                : const HomeClientView();
-          }
-          return const LoginView();
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
+
+        final user = snapshot.data ?? authViewModel.currentUser;
+        
+        if (user != null) {
+          return user.isProfessional
+              ? const HomeProfessionalView()
+              : const HomeClientView();
+        }
+        return const LoginView();
       },
     );
   }
 }
+
+// class AuthWrapper extends StatelessWidget {
+//   const AuthWrapper({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+//     return StreamBuilder(
+//       stream: authViewModel.userStream,
+//       builder: (context, snapshot) {
+//         if (snapshot.connectionState == ConnectionState.active) {
+//           if (snapshot.hasData && snapshot.data != null) {
+//             return snapshot.data!.isProfessional
+//                 ? const HomeProfessionalView()
+//                 : const HomeClientView();
+//           }
+//           return const LoginView();
+//         }
+//         return const Scaffold(
+//           body: Center(child: CircularProgressIndicator()),
+//         );
+//       },
+//     );
+//   }
+// }
