@@ -16,14 +16,16 @@ import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/professional_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/user_viewmodel.dart';
+import 'package:preciso/presentation/viewmodels/profile_viewmodel.dart';
 import 'package:preciso/presentation/views/auth/login_view.dart';
 import 'package:preciso/presentation/views/client/home_client_view.dart';
 import 'package:preciso/presentation/views/professional/home_professional_view.dart';
+import 'package:preciso/presentation/views/client/profile/client_profile_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Provider.debugCheckInvalidValueType = null;
   runApp(const MyApp());
 }
@@ -71,7 +73,7 @@ class MyApp extends StatelessWidget {
         ),
 
         ChangeNotifierProxyProvider<ServiceRepository, ServiceViewModel>(
-          create: (_) => ServiceViewModel(), // Agora pode ser criado sem parâmetros
+          create: (_) => ServiceViewModel(),
           update: (_, serviceRepo, viewModel) => viewModel!..updateDependencies(
             getClientRequestsUseCase: GetClientRequestsUseCase(serviceRepo),
             getAvailableRequestsUseCase: GetAvailableRequestsUseCase(serviceRepo),
@@ -82,7 +84,7 @@ class MyApp extends StatelessWidget {
         ),
 
         ChangeNotifierProxyProvider2<UserRepository, ServiceRepository, ProfessionalViewModel>(
-          create: (_) => ProfessionalViewModel(), // Agora pode ser criado sem parâmetros
+          create: (_) => ProfessionalViewModel(),
           update: (_, userRepo, serviceRepo, viewModel) => viewModel!..updateDependencies(
             userRepository: userRepo,
             serviceRepository: serviceRepo,
@@ -99,6 +101,32 @@ class MyApp extends StatelessWidget {
             uploadProfileImageUseCase: UploadProfileImageUseCase(userRepo),
           ),
         ),
+
+        // Providers para Use Cases individuais
+        Provider<GetUserByIdUseCase>(
+          create: (context) => GetUserByIdUseCase(
+            Provider.of<UserRepository>(context, listen: false),
+          ),
+        ),
+        Provider<UpdateUserProfileUseCase>(
+          create: (context) => UpdateUserProfileUseCase(
+            Provider.of<UserRepository>(context, listen: false),
+          ),
+        ),
+        Provider<UploadProfileImageUseCase>(
+          create: (context) => UploadProfileImageUseCase(
+            Provider.of<UserRepository>(context, listen: false),
+          ),
+        ),
+
+        // Profile ViewModel
+        ChangeNotifierProvider<ProfileViewModel>(
+          create: (context) => ProfileViewModel(
+            getUserByIdUseCase: Provider.of<GetUserByIdUseCase>(context, listen: false),
+            updateUserProfileUseCase: Provider.of<UpdateUserProfileUseCase>(context, listen: false),
+            uploadProfileImageUseCase: Provider.of<UploadProfileImageUseCase>(context, listen: false),
+          ),
+        ),
       ],
       child: MaterialApp(
         title: 'Preciso',
@@ -113,8 +141,10 @@ class MyApp extends StatelessWidget {
           '/home_client': (context) => const HomeClientView(),
           '/home_professional': (context) => const HomeProfessionalView(),
           '/register': (context) => const RegisterView(),
+          '/client_profile': (context) => ClientProfileScreen(
+            userId: Provider.of<AuthViewModel>(context, listen: false).currentUser?.uid ?? '',
+          ),
         },
-        
         debugShowCheckedModeBanner: false,
       ),
     );
@@ -149,29 +179,3 @@ class AuthWrapper extends StatelessWidget {
     );
   }
 }
-
-// class AuthWrapper extends StatelessWidget {
-//   const AuthWrapper({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-
-//     return StreamBuilder(
-//       stream: authViewModel.userStream,
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.active) {
-//           if (snapshot.hasData && snapshot.data != null) {
-//             return snapshot.data!.isProfessional
-//                 ? const HomeProfessionalView()
-//                 : const HomeClientView();
-//           }
-//           return const LoginView();
-//         }
-//         return const Scaffold(
-//           body: Center(child: CircularProgressIndicator()),
-//         );
-//       },
-//     );
-//   }
-// }
