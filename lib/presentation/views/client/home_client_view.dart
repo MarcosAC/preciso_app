@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
 import 'package:preciso/presentation/views/client/request_service_view.dart';
 import 'package:preciso/presentation/views/client/professionals_list_view.dart';
 
@@ -9,8 +7,6 @@ class HomeClientView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //final serviceViewModel = Provider.of<ServiceViewModel>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Serviços Disponíveis'),

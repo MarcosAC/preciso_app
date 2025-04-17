@@ -3,7 +3,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/domain/usecases/auth_usecases.dart';
-import 'package:preciso/core/utils/firebase/firebase_extensions.dart';
 
 class AuthViewModel with ChangeNotifier {
   late LoginUseCase loginUseCase;
