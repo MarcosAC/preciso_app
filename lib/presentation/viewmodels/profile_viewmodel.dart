@@ -101,4 +101,4 @@ class ProfileViewModel with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
-}
+} 

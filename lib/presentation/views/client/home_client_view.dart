@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:preciso/presentation/views/client/profile/client_profile_screen.dart';
 import 'package:preciso/presentation/views/client/request_service_view.dart';
 import 'package:preciso/presentation/views/client/professionals_list_view.dart';
+import 'package:provider/provider.dart';
 
 class HomeClientView extends StatelessWidget {
   const HomeClientView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Obtém o userId do AuthViewModel
+    final userId = Provider.of<AuthViewModel>(context, listen: false).currentUser?.uid ?? '';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Serviços Disponíveis'),
@@ -14,7 +20,12 @@ class HomeClientView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
-              // Navegar para perfil
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ClientProfileScreen(userId: userId),
+                ),
+              );
             },
           ),
         ],

@@ -6,31 +6,43 @@ import 'package:preciso/presentation/viewmodels/profile_viewmodel.dart';
 import '../../../views/profile/widgets/profile_app_bar.dart';
 import '../../../views/profile/widgets/user_info_section.dart';
 
-class ClientProfileScreen extends StatelessWidget {
+class ClientProfileScreen extends StatefulWidget {
   final String userId;
 
   const ClientProfileScreen({super.key, required this.userId});
 
-  Future<void> _pickImage(BuildContext context) async {
+  @override
+  State<ClientProfileScreen> createState() => _ClientProfileScreenState();
+}
+
+class _ClientProfileScreenState extends State<ClientProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    // Adiciona pequeno delay para garantir que o widget está montado
+    await Future.delayed(Duration.zero);
+    if (mounted) {
+      final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+      await viewModel.loadUserProfile(widget.userId);
+    }
+  }
+
+  Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     
-    // Verificação correta para StatelessWidget
-    if (pickedFile != null && context.mounted) {
+    if (pickedFile != null && mounted) {
       await Provider.of<ProfileViewModel>(context, listen: false)
-          .uploadProfileImage(userId, pickedFile.path);
+          .uploadProfileImage(widget.userId, pickedFile.path);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.mounted) {
-        profileViewModel.loadUserProfile(userId);
-      }
-    });
-
     return Scaffold(
       appBar: const ProfileAppBar(title: 'Meu Perfil'),
       body: Consumer<ProfileViewModel>(
@@ -40,7 +52,17 @@ class ClientProfileScreen extends StatelessWidget {
           }
 
           if (viewModel.user == null) {
-            return const Center(child: Text('Erro ao carregar perfil'));
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Erro ao carregar perfil'),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _loadProfile,
+                  child: const Text('Tentar novamente'),
+                ),
+              ],
+            );
           }
 
           return SingleChildScrollView(
@@ -50,7 +72,7 @@ class ClientProfileScreen extends StatelessWidget {
                 UserInfoSection(
                   user: viewModel.user!,
                   isEditing: viewModel.isEditing,
-                  onImageChanged: (_) => _pickImage(context),
+                  onImageChanged: (_) => _pickImage(),
                 ),
                 const SizedBox(height: 24),
                 ClientSpecificSection(
