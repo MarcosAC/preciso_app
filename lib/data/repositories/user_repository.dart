@@ -1,41 +1,54 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:preciso/core/models/user_model.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/domain/repositories/user_repository_interface.dart';
 
 class UserRepository implements IUserRepository {
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final FirebaseAuth _firebaseAuth;
+  final DatabaseReference _dbRef;
   final FirebaseStorage _storage;
 
   UserRepository({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-    FirebaseStorage? storage,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+    FirebaseAuth? firebaseAuth,
+    DatabaseReference? dbRef,
+    FirebaseStorage? firebaseStorage,
+  }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
+       _dbRef = dbRef ?? FirebaseDatabase.instance.ref(),
+       _storage = firebaseStorage ?? FirebaseStorage.instance;
 
   @override
   Future<List<UserModel>> getProfessionalsByService(String serviceType) async {
     try {
-      final querySnapshot = await _firestore
-          .collection('users')
-          .where('isProfessional', isEqualTo: true)
-          .where('services', arrayContains: serviceType)
-          .get();
+      final snapshot = await _dbRef.child('users').once();
+      final data = snapshot.snapshot.value as Map?;
 
-      return querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        return UserModel.fromMap({
-          'uid': doc.id,
-          ...data,
-          'createdAt': data['createdAt']?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
-        });
-      }).toList();
+      if (data == null) return [];
+
+      final professionals =
+          data.entries
+              .where(
+                (entry) =>
+                    entry.value['isProfessional'] == true &&
+                    (entry.value['services'] as List<dynamic>?)?.contains(
+                          serviceType,
+                        ) ==
+                        true,
+              )
+              .map(
+                (entry) => UserModel.fromMap({
+                  'uid': entry.key,
+                  ...Map<String, dynamic>.from(entry.value),
+                  'createdAt':
+                      entry.value['createdAt'] ??
+                      DateTime.now().millisecondsSinceEpoch,
+                }),
+              )
+              .toList();
+
+      return professionals;
     } catch (e) {
       throw Exception('Failed to load professionals: $e');
     }
@@ -44,15 +57,19 @@ class UserRepository implements IUserRepository {
   @override
   Future<UserEntity?> getUserById(String userId) async {
     try {
-      final doc = await _firestore.collection('users').doc(userId).get();
-      if (doc.exists) {
-        return UserModel.fromMap({
-          'uid': doc.id,
-          ...doc.data()!,
-          'createdAt': doc.data()!['createdAt']?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
-        }).toEntity();
-      }
-      return null;
+      final snapshot = await _dbRef.child('users/$userId').once();
+      final data = snapshot.snapshot.value;
+
+      if (data == null) return null;
+
+      final userData = Map<String, dynamic>.from(data as Map);
+
+      return UserModel.fromMap({
+        'uid': userId,
+        ...userData,
+        'createdAt':
+            userData['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
+      }).toEntity();
     } catch (e) {
       throw Exception('Failed to load user: $e');
     }
@@ -61,9 +78,8 @@ class UserRepository implements IUserRepository {
   @override
   Future<void> updateUser(UserEntity user) async {
     try {
-      await _firestore.collection('users').doc(user.uid).update(
-        UserModel.fromEntity(user).toMap()
-      );
+      final userModel = UserModel.fromEntity(user);
+      await _dbRef.child('users/${user.uid}').update(userModel.toMap());
     } catch (e) {
       throw Exception('Failed to update user: $e');
     }
@@ -80,7 +96,7 @@ class UserRepository implements IUserRepository {
     String? photoUrl,
   }) async {
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -101,7 +117,7 @@ class UserRepository implements IUserRepository {
         createdAt: DateTime.now(),
       );
 
-      await _firestore.collection('users').doc(user.uid).set(user.toMap());
+      await _dbRef.child('users/${user.uid}').set(user.toMap());
 
       return user.toEntity();
     } catch (e) {
@@ -115,10 +131,10 @@ class UserRepository implements IUserRepository {
       final ref = _storage.ref().child('profile_images/$userId.jpg');
       await ref.putFile(File(imagePath));
       final imageUrl = await ref.getDownloadURL();
-      
-      await _firestore.collection('users').doc(userId).update({
+
+      await _dbRef.child('users/$userId').update({
         'photoUrl': imageUrl,
-        'updatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
       });
 
       return imageUrl;

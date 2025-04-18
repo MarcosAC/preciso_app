@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/presentation/views/auth/register_view.dart';
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         Provider<FirebaseAuth>(create: (_) => FirebaseAuth.instance),
         Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
         Provider<FirebaseStorage>(create: (_) => FirebaseStorage.instance),
+        Provider<DatabaseReference>(create: (_) => FirebaseDatabase.instance.ref()),
 
         // Repositories
         ProxyProvider<FirebaseAuth, AuthRepository>(
@@ -55,10 +57,11 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        ProxyProvider2<FirebaseFirestore, FirebaseStorage, UserRepository>(
-          update: (_, firestore, storage, __) => UserRepository(
-            firestore: firestore,
-            storage: storage,
+        ProxyProvider3<FirebaseAuth, DatabaseReference, FirebaseStorage, UserRepository>(
+          update: (_, auth, dbRef, storage, __) => UserRepository(
+            firebaseAuth: auth,
+            dbRef: dbRef,
+            firebaseStorage: storage,
           ),
         ),
 
@@ -90,7 +93,7 @@ class MyApp extends StatelessWidget {
             serviceRepository: serviceRepo,
           ),
         ),
-        
+
         ChangeNotifierProxyProvider<UserRepository, UserViewModel>(
           create: (_) => UserViewModel(),
           update: (_, userRepo, viewModel) => viewModel!..updateDependencies(
@@ -102,7 +105,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        // Providers para Use Cases individuais
+        // Use Cases individuais
         Provider<GetUserByIdUseCase>(
           create: (context) => GetUserByIdUseCase(
             Provider.of<UserRepository>(context, listen: false),
@@ -168,7 +171,7 @@ class AuthWrapper extends StatelessWidget {
         }
 
         final user = snapshot.data ?? authViewModel.currentUser;
-        
+
         if (user != null) {
           return user.isProfessional
               ? const HomeProfessionalView()
