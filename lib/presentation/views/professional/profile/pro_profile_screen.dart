@@ -15,10 +15,59 @@ class ClientProfileScreen extends StatelessWidget {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     
-     // Verificação correta para StatelessWidget
     if (pickedFile != null && context.mounted) {
       await Provider.of<ProfileViewModel>(context, listen: false)
           .uploadProfileImage(userId, pickedFile.path);
+    }
+  }
+
+  Future<void> _performLogout(BuildContext context) async {
+    final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+    await viewModel.performLogout();
+    
+    if (context.mounted) {
+      Navigator.pushNamedAndRemoveUntil(
+        context, 
+        '/login', 
+        (route) => false
+      );
+      
+      _showLogoutMessage(context);
+    }
+  }
+
+  void _showLogoutMessage(BuildContext context) {
+    if (!context.mounted) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Você foi desconectado com sucesso'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar saída - Pro Profile'),
+        content: const Text('Tem certeza que deseja sair da sua conta?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await _performLogout(context);
     }
   }
 
@@ -36,7 +85,17 @@ class ClientProfileScreen extends StatelessWidget {
           }
 
           if (viewModel.user == null) {
-            return const Center(child: Text('Erro ao carregar perfil'));
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Erro ao carregar perfil'),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => profileViewModel.loadUserProfile(userId),
+                  child: const Text('Tentar novamente'),
+                ),
+              ],
+            );
           }
 
           return SingleChildScrollView(
@@ -46,12 +105,13 @@ class ClientProfileScreen extends StatelessWidget {
                 UserInfoSection(
                   user: viewModel.user!,
                   isEditing: viewModel.isEditing,
-                  onImageChanged: (path) => _pickImage(context),
+                  onImageChanged: (_) => _pickImage(context),
                 ),
                 const SizedBox(height: 24),
                 ClientSpecificSection(
                   user: viewModel.user!,
                   isEditing: viewModel.isEditing,
+                  onLogout: () => _confirmLogout(context),
                 ),
               ],
             ),
