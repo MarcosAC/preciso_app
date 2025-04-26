@@ -42,93 +42,184 @@ class MyApp extends StatelessWidget {
         Provider<FirebaseAuth>(create: (_) => FirebaseAuth.instance),
         Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
         Provider<FirebaseStorage>(create: (_) => FirebaseStorage.instance),
-        Provider<DatabaseReference>(create: (_) => FirebaseDatabase.instance.ref()),
+        Provider<DatabaseReference>(
+          create: (_) => FirebaseDatabase.instance.ref(),
+        ),
 
         // Repositories
-        ProxyProvider<FirebaseAuth, AuthRepository>(
-          update: (_, auth, __) => AuthRepository(firebaseAuth: auth),
+        Provider<AuthRepository>(
+          create:
+              (context) =>
+                  AuthRepository(firebaseAuth: context.read<FirebaseAuth>()),
         ),
 
-        ProxyProvider3<FirebaseAuth, FirebaseFirestore, FirebaseStorage, ServiceRepository>(
-          update: (_, auth, firestore, storage, __) => ServiceRepository(
-            auth: auth,
-            firestore: firestore,
-            storage: storage,
-          ),
+        Provider<ServiceRepository>(
+          create:
+              (context) => ServiceRepository(
+                auth: context.read<FirebaseAuth>(),
+                firestore: context.read<FirebaseFirestore>(),
+                storage: context.read<FirebaseStorage>(),
+              ),
         ),
 
-        ProxyProvider3<FirebaseAuth, DatabaseReference, FirebaseStorage, UserRepository>(
-          update: (_, auth, dbRef, storage, __) => UserRepository(
-            firebaseAuth: auth,
-            dbRef: dbRef,
-            firebaseStorage: storage,
-          ),
+        Provider<UserRepository>(
+          create:
+              (context) => UserRepository(
+                firebaseAuth: context.read<FirebaseAuth>(),
+                dbRef: context.read<DatabaseReference>(),
+                firebaseStorage: context.read<FirebaseStorage>(),
+              ),
+        ),
+
+        // Use Cases
+        Provider<LoginUseCase>(
+          create: (context) => LoginUseCase(context.read<AuthRepository>()),
+        ),
+        Provider<RegisterClientUseCase>(
+          create:
+              (context) =>
+                  RegisterClientUseCase(context.read<AuthRepository>()),
+        ),
+        Provider<LogoutUseCase>(
+          create: (context) => LogoutUseCase(context.read<AuthRepository>()),
+        ),
+        Provider<GetUserByIdUseCase>(
+          create:
+              (context) => GetUserByIdUseCase(context.read<UserRepository>()),
+        ),
+        Provider<UpdateUserProfileUseCase>(
+          create:
+              (context) =>
+                  UpdateUserProfileUseCase(context.read<UserRepository>()),
+        ),
+        Provider<UploadProfileImageUseCase>(
+          create:
+              (context) =>
+                  UploadProfileImageUseCase(context.read<UserRepository>()),
         ),
 
         // ViewModels
         ChangeNotifierProxyProvider<AuthRepository, AuthViewModel>(
           create: (_) => AuthViewModel(),
-          update: (_, authRepo, viewModel) => viewModel!..updateDependencies(
-            loginUseCase: LoginUseCase(authRepo),
-            registerClientUseCase: RegisterClientUseCase(authRepo),
-            logoutUseCase: LogoutUseCase(authRepo),
-          ),
+          update:
+              (_, authRepo, viewModel) =>
+                  viewModel!..updateDependencies(
+                    loginUseCase: LoginUseCase(authRepo),
+                    registerClientUseCase: RegisterClientUseCase(authRepo),
+                    logoutUseCase: LogoutUseCase(authRepo),
+                  ),
+        ),
+        ChangeNotifierProvider<ProfileViewModel>(
+          create:
+              (context) => ProfileViewModel(
+                getUserByIdUseCase: context.read<GetUserByIdUseCase>(),
+                updateUserProfileUseCase:
+                    context.read<UpdateUserProfileUseCase>(),
+                uploadProfileImageUseCase:
+                    context.read<UploadProfileImageUseCase>(),
+                logoutUseCase: context.read<LogoutUseCase>(),
+              ),
         ),
 
         ChangeNotifierProxyProvider<ServiceRepository, ServiceViewModel>(
           create: (_) => ServiceViewModel(),
-          update: (_, serviceRepo, viewModel) => viewModel!..updateDependencies(
-            getClientRequestsUseCase: GetClientRequestsUseCase(serviceRepo),
-            getAvailableRequestsUseCase: GetAvailableRequestsUseCase(serviceRepo),
-            createServiceRequestUseCase: CreateServiceRequestUseCase(serviceRepo),
-            updateRequestStatusUseCase: UpdateRequestStatusUseCase(serviceRepo),
-            rateProfessionalUseCase: RateProfessionalUseCase(serviceRepo),
-          ),
+          update:
+              (_, serviceRepo, viewModel) =>
+                  viewModel!..updateDependencies(
+                    getClientRequestsUseCase: GetClientRequestsUseCase(
+                      serviceRepo,
+                    ),
+                    getAvailableRequestsUseCase: GetAvailableRequestsUseCase(
+                      serviceRepo,
+                    ),
+                    createServiceRequestUseCase: CreateServiceRequestUseCase(
+                      serviceRepo,
+                    ),
+                    updateRequestStatusUseCase: UpdateRequestStatusUseCase(
+                      serviceRepo,
+                    ),
+                    rateProfessionalUseCase: RateProfessionalUseCase(
+                      serviceRepo,
+                    ),
+                  ),
         ),
 
-        ChangeNotifierProxyProvider2<UserRepository, ServiceRepository, ProfessionalViewModel>(
+        ChangeNotifierProxyProvider2<
+          UserRepository,
+          ServiceRepository,
+          ProfessionalViewModel
+        >(
           create: (_) => ProfessionalViewModel(),
-          update: (_, userRepo, serviceRepo, viewModel) => viewModel!..updateDependencies(
-            userRepository: userRepo,
-            serviceRepository: serviceRepo,
-          ),
+          update:
+              (_, userRepo, serviceRepo, viewModel) =>
+                  viewModel!..updateDependencies(
+                    userRepository: userRepo,
+                    serviceRepository: serviceRepo,
+                  ),
         ),
 
         ChangeNotifierProxyProvider<UserRepository, UserViewModel>(
           create: (_) => UserViewModel(),
-          update: (_, userRepo, viewModel) => viewModel!..updateDependencies(
-            getProfessionalsByServiceUseCase: GetProfessionalsByServiceUseCase(userRepo),
-            getUserByIdUseCase: GetUserByIdUseCase(userRepo),
-            updateUserProfileUseCase: UpdateUserProfileUseCase(userRepo),
-            registerProfessionalUseCase: RegisterProfessionalUseCase(userRepo),
-            uploadProfileImageUseCase: UploadProfileImageUseCase(userRepo),
-          ),
+          update:
+              (_, userRepo, viewModel) =>
+                  viewModel!..updateDependencies(
+                    getProfessionalsByServiceUseCase:
+                        GetProfessionalsByServiceUseCase(userRepo),
+                    getUserByIdUseCase: GetUserByIdUseCase(userRepo),
+                    updateUserProfileUseCase: UpdateUserProfileUseCase(
+                      userRepo,
+                    ),
+                    registerProfessionalUseCase: RegisterProfessionalUseCase(
+                      userRepo,
+                    ),
+                    uploadProfileImageUseCase: UploadProfileImageUseCase(
+                      userRepo,
+                    ),
+                  ),
         ),
 
         // Use Cases individuais
         Provider<GetUserByIdUseCase>(
-          create: (context) => GetUserByIdUseCase(
-            Provider.of<UserRepository>(context, listen: false),
-          ),
+          create:
+              (context) => GetUserByIdUseCase(
+                Provider.of<UserRepository>(context, listen: false),
+              ),
         ),
         Provider<UpdateUserProfileUseCase>(
-          create: (context) => UpdateUserProfileUseCase(
-            Provider.of<UserRepository>(context, listen: false),
-          ),
+          create:
+              (context) => UpdateUserProfileUseCase(
+                Provider.of<UserRepository>(context, listen: false),
+              ),
         ),
         Provider<UploadProfileImageUseCase>(
-          create: (context) => UploadProfileImageUseCase(
-            Provider.of<UserRepository>(context, listen: false),
-          ),
+          create:
+              (context) => UploadProfileImageUseCase(
+                Provider.of<UserRepository>(context, listen: false),
+              ),
         ),
 
         // Profile ViewModel
         ChangeNotifierProvider<ProfileViewModel>(
-          create: (context) => ProfileViewModel(
-            getUserByIdUseCase: Provider.of<GetUserByIdUseCase>(context, listen: false),
-            updateUserProfileUseCase: Provider.of<UpdateUserProfileUseCase>(context, listen: false),
-            uploadProfileImageUseCase: Provider.of<UploadProfileImageUseCase>(context, listen: false),
-          ),
+          create:
+              (context) => ProfileViewModel(
+                getUserByIdUseCase: Provider.of<GetUserByIdUseCase>(
+                  context,
+                  listen: false,
+                ),
+                updateUserProfileUseCase: Provider.of<UpdateUserProfileUseCase>(
+                  context,
+                  listen: false,
+                ),
+                uploadProfileImageUseCase:
+                    Provider.of<UploadProfileImageUseCase>(
+                      context,
+                      listen: false,
+                    ),
+                logoutUseCase: Provider.of<LogoutUseCase>(
+                  context,
+                  listen: false,
+                ),
+              ),
         ),
       ],
       child: MaterialApp(
@@ -144,9 +235,15 @@ class MyApp extends StatelessWidget {
           '/home_client': (context) => const HomeClientView(),
           '/home_professional': (context) => const HomeProfessionalView(),
           '/register': (context) => const RegisterView(),
-          '/client_profile': (context) => ClientProfileScreen(
-            userId: Provider.of<AuthViewModel>(context, listen: false).currentUser?.uid ?? '',
-          ),
+          '/client_profile':
+              (context) => ClientProfileScreen(
+                userId:
+                    Provider.of<AuthViewModel>(
+                      context,
+                      listen: false,
+                    ).currentUser?.uid ??
+                    '',
+              ),
         },
         debugShowCheckedModeBanner: false,
       ),
