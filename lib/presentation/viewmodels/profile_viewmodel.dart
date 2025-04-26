@@ -1,12 +1,14 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/extensions/user_entity_extensions.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
+import 'package:preciso/domain/usecases/auth_usecases.dart';
 import 'package:preciso/domain/usecases/user_usecases.dart';
 
 class ProfileViewModel with ChangeNotifier {
   final GetUserByIdUseCase _getUserByIdUseCase;
   final UpdateUserProfileUseCase _updateUserProfileUseCase;
   final UploadProfileImageUseCase _uploadProfileImageUseCase;
+  final LogoutUseCase logoutUseCase;
 
   UserEntity? _user;
   bool _isLoading = false;
@@ -17,6 +19,7 @@ class ProfileViewModel with ChangeNotifier {
     required GetUserByIdUseCase getUserByIdUseCase,
     required UpdateUserProfileUseCase updateUserProfileUseCase,
     required UploadProfileImageUseCase uploadProfileImageUseCase,
+    required this.logoutUseCase,
   })  : _getUserByIdUseCase = getUserByIdUseCase,
         _updateUserProfileUseCase = updateUserProfileUseCase,
         _uploadProfileImageUseCase = uploadProfileImageUseCase;
@@ -28,7 +31,7 @@ class ProfileViewModel with ChangeNotifier {
 
   Future<void> loadUserProfile(String userId) async {
     _isLoading = true;
-    notifyListeners();
+    _scheduleNotify();
 
     try {
       _user = await _getUserByIdUseCase(userId);
@@ -37,8 +40,24 @@ class ProfileViewModel with ChangeNotifier {
       _errorMessage = 'Erro ao carregar perfil: ${e.toString()}';
     } finally {
       _isLoading = false;
-      notifyListeners();
+      _scheduleNotify();
     }
+  }
+
+  void _scheduleNotify() {
+    if (!_isDisposed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_isDisposed) notifyListeners();
+      });
+    }
+  }
+
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 
   void toggleEditing() {
@@ -96,6 +115,19 @@ class ProfileViewModel with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> performLogout() async {
+    try {
+      await logoutUseCase();
+      _user = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Falha ao fazer logout: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  } 
 
   void clearError() {
     _errorMessage = null;

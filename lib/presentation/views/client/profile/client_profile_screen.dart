@@ -19,25 +19,46 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfile();
+    });
   }
 
   Future<void> _loadProfile() async {
-    // Adiciona pequeno delay para garantir que o widget está montado
-    await Future.delayed(Duration.zero);
     if (mounted) {
-      final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
-      await viewModel.loadUserProfile(widget.userId);
+      await Provider.of<ProfileViewModel>(context, listen: false)
+          .loadUserProfile(widget.userId);
     }
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (pickedFile != null && mounted) {
-      await Provider.of<ProfileViewModel>(context, listen: false)
-          .uploadProfileImage(widget.userId, pickedFile.path);
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar saída'),
+        content: const Text('Deseja realmente sair da sua conta?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await Provider.of<ProfileViewModel>(context, listen: false).performLogout();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context, 
+          '/login', 
+          (route) => false,
+        );
+      }
     }
   }
 
@@ -78,6 +99,7 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
                 ClientSpecificSection(
                   user: viewModel.user!,
                   isEditing: viewModel.isEditing,
+                  onLogout: _handleLogout,
                 ),
               ],
             ),
@@ -85,5 +107,25 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
         },
       ),
     );
+  }
+
+   Future<void> _pickImage() async {
+    if (!mounted) return;
+    
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (pickedFile == null || !mounted) return;
+    
+    try {
+      final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+      await viewModel.uploadProfileImage(widget.userId, pickedFile.path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao enviar imagem')),
+        );
+      }
+    }
   }
 }
