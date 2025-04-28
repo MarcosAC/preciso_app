@@ -7,7 +7,6 @@ import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/domain/repositories/user_repository_interface.dart';
 
 class UserRepository implements IUserRepository {
-  final FirebaseAuth _firebaseAuth;
   final DatabaseReference _dbRef;
   final FirebaseStorage _storage;
 
@@ -15,8 +14,7 @@ class UserRepository implements IUserRepository {
     FirebaseAuth? firebaseAuth,
     DatabaseReference? dbRef,
     FirebaseStorage? firebaseStorage,
-  }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-       _dbRef = dbRef ?? FirebaseDatabase.instance.ref(),
+  }) : _dbRef = dbRef ?? FirebaseDatabase.instance.ref(),
        _storage = firebaseStorage ?? FirebaseStorage.instance;
 
   @override
@@ -82,46 +80,6 @@ class UserRepository implements IUserRepository {
       await _dbRef.child('users/${user.uid}').update(userModel.toMap());
     } catch (e) {
       throw Exception('Failed to update user: $e');
-    }
-  }
-
-  @override
-  Future<UserEntity> registerProfessional({
-    required String name,
-    required String email,
-    required String password,
-    required String phone,
-    required String profession,
-    List<String>? services,
-    String? photoUrl,
-  }) async {
-    try {
-      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      await userCredential.user?.updateDisplayName(name);
-
-      final user = UserModel(
-        uid: userCredential.user!.uid,
-        name: name,
-        email: email,
-        phone: phone,
-        isProfessional: true,
-        profession: profession,
-        services: services ?? [],
-        rating: 0,
-        completedServices: 0,
-        photoUrl: photoUrl,
-        createdAt: DateTime.now(),
-      );
-
-      await _dbRef.child('users/${user.uid}').set(user.toMap());
-
-      return user.toEntity();
-    } catch (e) {
-      throw Exception('Failed to register professional: $e');
     }
   }
 

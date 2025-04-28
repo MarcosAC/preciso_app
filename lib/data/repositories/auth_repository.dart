@@ -20,7 +20,10 @@ class AuthRepository implements IAuthRepository {
   }
 
   @override
-  Future<UserEntity?> login({required String email, required String password}) async {
+  Future<UserEntity?> login({
+    required String email,
+    required String password,
+  }) async {
     try {
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -49,7 +52,7 @@ class AuthRepository implements IAuthRepository {
       );
 
       await userCredential.user?.updateDisplayName(name);
-      
+
       final userData = {
         'uid': userCredential.user!.uid,
         'name': name,
@@ -66,7 +69,8 @@ class AuthRepository implements IAuthRepository {
 
       return UserEntity.fromMap({
         'uid': userCredential.user!.uid, ...userData,
-        'createdAt': DateTime.now(), // Valor temporário até ser atualizado pelo servidor
+        'createdAt':
+            DateTime.now(), // Valor temporário até ser atualizado pelo servidor
       });
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
@@ -81,7 +85,8 @@ class AuthRepository implements IAuthRepository {
     required String email,
     required String password,
     required String phone,
-    required String profession,
+    required isProfessional,
+    required profession,
     List<String>? services,
     String? photoUrl,
   }) async {
@@ -180,7 +185,7 @@ class AuthRepository implements IAuthRepository {
       // Convertendo o timestamp do Firebase para DateTime
       dynamic createdAt = userData['createdAt'];
       DateTime createdAtDate;
-      
+
       if (createdAt is int) {
         createdAtDate = DateTime.fromMillisecondsSinceEpoch(createdAt);
       } else if (createdAt == null) {
@@ -192,8 +197,8 @@ class AuthRepository implements IAuthRepository {
 
       return UserEntity.fromMap({
         'uid': firebaseUser.uid,
-        ...userData,        
-        'createdAt': createdAtDate
+        ...userData,
+        'createdAt': createdAtDate,
       });
     } catch (e) {
       throw Exception('Failed to fetch user data: ${e.toString()}');

@@ -80,6 +80,11 @@ class MyApp extends StatelessWidget {
               (context) =>
                   RegisterClientUseCase(context.read<AuthRepository>()),
         ),
+        Provider<RegisterProfessionalUseCase>(
+          create: 
+              (context) => 
+                  RegisterProfessionalUseCase(context.read<AuthRepository>()),
+        ),
         Provider<LogoutUseCase>(
           create: (context) => LogoutUseCase(context.read<AuthRepository>()),
         ),
@@ -106,6 +111,7 @@ class MyApp extends StatelessWidget {
                   viewModel!..updateDependencies(
                     loginUseCase: LoginUseCase(authRepo),
                     registerClientUseCase: RegisterClientUseCase(authRepo),
+                    registerProfessionalUseCase: RegisterProfessionalUseCase(authRepo),
                     logoutUseCase: LogoutUseCase(authRepo),
                   ),
         ),
@@ -167,9 +173,6 @@ class MyApp extends StatelessWidget {
                         GetProfessionalsByServiceUseCase(userRepo),
                     getUserByIdUseCase: GetUserByIdUseCase(userRepo),
                     updateUserProfileUseCase: UpdateUserProfileUseCase(
-                      userRepo,
-                    ),
-                    registerProfessionalUseCase: RegisterProfessionalUseCase(
                       userRepo,
                     ),
                     uploadProfileImageUseCase: UploadProfileImageUseCase(

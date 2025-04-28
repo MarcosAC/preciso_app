@@ -10,10 +10,7 @@ class LoginUseCase {
     required String email,
     required String password,
   }) async {
-    return await _repository.login(
-      email: email,
-      password: password,
-    );
+    return await _repository.login(email: email, password: password);
   }
 }
 
@@ -39,37 +36,39 @@ class RegisterClientUseCase {
   }
 }
 
-// class RegisterProfessionalUseCase {
-//   final IAuthRepository _repository;
+class RegisterProfessionalUseCase {
+  final IAuthRepository _repository;
 
-//   RegisterProfessionalUseCase(this._repository);
+  RegisterProfessionalUseCase(this._repository);
 
-//   Future<UserEntity?> call({
-//     required String name,
-//     required String email,
-//     required String password,
-//     required String phone,
-//     required String profession,
-//     List<String>? services,
-//     String? photoUrl,
-//   }) async {
-//     return await _repository.registerProfessional(
-//       name: name,
-//       email: email,
-//       password: password,
-//       phone: phone,
-//       profession: profession,
-//       services: services,
-//       photoUrl: photoUrl,
-//     );
-//   }
-// }
+  Future<UserEntity?> call({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required bool isProfessional,
+    required String profession,
+    List<String>? services,
+    String? photoUrl,
+  }) async {
+    return await _repository.registerProfessional(
+      name: name,
+      email: email,
+      password: password,
+      phone: phone,
+      isProfessional: isProfessional,
+      profession: profession,
+      services: services,
+      photoUrl: photoUrl,
+    );
+  }
+}
 
 class LogoutUseCase {
   final IAuthRepository _repository;
-  
+
   LogoutUseCase(this._repository);
-  
+
   Future<void> call() => _repository.logout();
 }
 

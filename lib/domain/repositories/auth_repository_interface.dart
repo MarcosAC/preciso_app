@@ -3,9 +3,9 @@ import 'package:preciso/domain/entities/user_entity.dart';
 abstract class IAuthRepository {
   // Stream que emite o usuário atual (null se deslogado)
   Stream<UserEntity?> get user;
-  
-  Future<UserEntity?> login({required String email,required String password});
-    
+
+  Future<UserEntity?> login({required String email, required String password});
+
   Future<UserEntity?> registerClient({
     required String name,
     required String email,
@@ -19,11 +19,12 @@ abstract class IAuthRepository {
     required String email,
     required String password,
     required String phone,
+    required bool isProfessional,
     required String profession,
     List<String>? services,
     String? photoUrl,
   });
-  
+
   Future<void> logout();
 
   // Recuperação de senha (novo método)

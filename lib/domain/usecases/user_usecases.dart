@@ -32,28 +32,6 @@ class UpdateUserProfileUseCase {
   }
 }
 
-class RegisterProfessionalUseCase {
-  final IUserRepository _repository;
-
-  RegisterProfessionalUseCase(this._repository);
-
-  Future<UserEntity> call({
-    required String name,
-    required String email,
-    required String password,
-    required String phone,
-    required String profession,
-  }) async {
-    return await _repository.registerProfessional(
-      name: name,
-      email: email,
-      password: password,
-      phone: phone,
-      profession: profession,
-    );
-  }
-}
-
 class UploadProfileImageUseCase {
   final IUserRepository _repository;
 
