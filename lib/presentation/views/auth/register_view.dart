@@ -152,7 +152,7 @@ class RegisterViewState extends State<RegisterView> {
                   decoration: const InputDecoration(
                     labelText: 'Serviço Oferecido',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
+                    prefixIcon: Icon(Icons.handyman),
                   ),
                   validator: (value) {
                     if (value != _professionController.text) {

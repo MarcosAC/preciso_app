@@ -114,7 +114,12 @@ class AuthRepository implements IAuthRepository {
 
       await _dbRef.child('users/${userCredential.user!.uid}').set(userData);
 
-      return UserEntity.fromMap({'uid': userCredential.user!.uid, ...userData});
+      //return UserEntity.fromMap({'uid': userCredential.user!.uid, ...userData});
+      return UserEntity.fromMap({
+        'uid': userCredential.user!.uid, ...userData,
+        'createdAt':
+            DateTime.now(), // Valor temporário até ser atualizado pelo servidor
+      });
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
     } catch (e) {

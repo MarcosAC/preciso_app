@@ -52,6 +52,7 @@ class AuthViewModel with ChangeNotifier {
   }) {
     this.loginUseCase = loginUseCase;
     this.registerClientUseCase = registerClientUseCase;
+    this.registerProfessionalUseCase = registerProfessionalUseCase;
     this.logoutUseCase = logoutUseCase;
   }
 
