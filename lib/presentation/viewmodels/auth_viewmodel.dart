@@ -7,6 +7,7 @@ import 'package:preciso/domain/usecases/auth_usecases.dart';
 class AuthViewModel with ChangeNotifier {
   late LoginUseCase loginUseCase;
   late RegisterClientUseCase registerClientUseCase;
+  late RegisterProfessionalUseCase registerProfessionalUseCase;
   late LogoutUseCase logoutUseCase;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
@@ -19,12 +20,10 @@ class AuthViewModel with ChangeNotifier {
 
   // Getters para estado do usuário
   User? get firebaseUser => _auth.currentUser;
-  
- UserEntity? get currentUser {
+
+  UserEntity? get currentUser {
     final user = firebaseUser;
-    return user != null 
-      ? UserEntity.fromFirebase(user: user, data: {}) 
-      : null;
+    return user != null ? UserEntity.fromFirebase(user: user, data: {}) : null;
   }
 
   Future<UserEntity?> getCurrentUserWithData() async {
@@ -33,14 +32,12 @@ class AuthViewModel with ChangeNotifier {
 
     try {
       final snapshot = await _dbRef.child('users/${user.uid}').get();
-      final data = snapshot.exists 
-          ? Map<String, dynamic>.from(snapshot.value as Map) 
-          : <String, dynamic>{};
-      
-      return UserEntity.fromFirebase(
-        user: user,
-        data: data,
-      );
+      final data =
+          snapshot.exists
+              ? Map<String, dynamic>.from(snapshot.value as Map)
+              : <String, dynamic>{};
+
+      return UserEntity.fromFirebase(user: user, data: data);
     } catch (e) {
       debugPrint('Error fetching user data: $e');
       return UserEntity.fromFirebaseUser(user);
@@ -50,6 +47,7 @@ class AuthViewModel with ChangeNotifier {
   void updateDependencies({
     required LoginUseCase loginUseCase,
     required RegisterClientUseCase registerClientUseCase,
+    required RegisterProfessionalUseCase registerProfessionalUseCase,
     required LogoutUseCase logoutUseCase,
   }) {
     this.loginUseCase = loginUseCase;
@@ -60,17 +58,15 @@ class AuthViewModel with ChangeNotifier {
   Stream<UserEntity?> get userStream {
     return _auth.authStateChanges().asyncMap((firebaseUser) async {
       if (firebaseUser == null) return null;
-      
+
       try {
         final snapshot = await _dbRef.child('users/${firebaseUser.uid}').get();
-        final userData = snapshot.exists 
-            ? Map<String, dynamic>.from(snapshot.value as Map) 
-            : <String, dynamic>{};
-        
-        return UserEntity.fromFirebase(
-          user: firebaseUser,
-          data: userData,
-        );
+        final userData =
+            snapshot.exists
+                ? Map<String, dynamic>.from(snapshot.value as Map)
+                : <String, dynamic>{};
+
+        return UserEntity.fromFirebase(user: firebaseUser, data: userData);
       } catch (e) {
         debugPrint('Error in userStream: $e');
         return UserEntity.fromFirebaseUser(firebaseUser);
@@ -107,6 +103,36 @@ class AuthViewModel with ChangeNotifier {
         email: email,
         password: password,
         phone: phone,
+        photoUrl: photoUrl,
+      );
+      _setLoading(false);
+      return user;
+    } catch (e) {
+      _setError(e.toString());
+      return null;
+    }
+  }
+
+  Future<UserEntity?> registerProfessional({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required isProfessional,
+    required profession,
+    List<String>? services,
+    String? photoUrl,
+  }) async {
+    _setLoading(true);
+    try {
+      final user = await registerProfessionalUseCase(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        isProfessional: isProfessional,
+        profession: profession,
+        services: services,
         photoUrl: photoUrl,
       );
       _setLoading(false);
