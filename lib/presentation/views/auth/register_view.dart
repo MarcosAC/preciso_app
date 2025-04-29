@@ -16,6 +16,7 @@ class RegisterViewState extends State<RegisterView> {
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _professionController = TextEditingController();
   bool _isProfessional = false;
 
   @override
@@ -142,7 +143,27 @@ class RegisterViewState extends State<RegisterView> {
                   return null;
                 },
                 onChanged: (_) => authViewModel.resetError(),
+              ), 
+              const SizedBox(height: 16),             
+              Visibility(
+                visible: _isProfessional ? true : false,
+                child: TextFormField(
+                  controller: _professionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Serviço Oferecido',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                  validator: (value) {
+                    if (value != _professionController.text) {
+                      return 'Por favor, insira o serviço oferecido';
+                    }
+                    return null;
+                  },
+                  onChanged: (_) => authViewModel.resetError(),
+                ),
               ),
+              
               const SizedBox(height: 16),
               SwitchListTile(
                 title: const Text('Sou profissional'),
@@ -175,12 +196,23 @@ class RegisterViewState extends State<RegisterView> {
 
   Future<void> _register(AuthViewModel authViewModel) async {
     if (_formKey.currentState!.validate()) {
+      if (_isProfessional) {
+        await authViewModel.registerProfessional(
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+          phone: _phoneController.text.trim(),
+          isProfessional: _isProfessional,
+          profession: _professionController.text.trim(),
+        );
+      } else {
         await authViewModel.registerClient(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-        phone: _phoneController.text.trim(),
-      );
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+          phone: _phoneController.text.trim(),
+        );        
+      }        
     }
   }
 }
