@@ -7,7 +7,6 @@ class UserViewModel with ChangeNotifier {
   late GetProfessionalsByServiceUseCase getProfessionalsByServiceUseCase;
   late GetUserByIdUseCase getUserByIdUseCase;
   late UpdateUserProfileUseCase updateUserProfileUseCase;
-  late RegisterProfessionalUseCase registerProfessionalUseCase;
   late UploadProfileImageUseCase uploadProfileImageUseCase;
 
   bool _isLoading = false;
@@ -15,18 +14,16 @@ class UserViewModel with ChangeNotifier {
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-  
+
   void updateDependencies({
     required GetProfessionalsByServiceUseCase getProfessionalsByServiceUseCase,
     required GetUserByIdUseCase getUserByIdUseCase,
     required UpdateUserProfileUseCase updateUserProfileUseCase,
-    required RegisterProfessionalUseCase registerProfessionalUseCase,
     required UploadProfileImageUseCase uploadProfileImageUseCase,
   }) {
     this.getProfessionalsByServiceUseCase = getProfessionalsByServiceUseCase;
     this.getUserByIdUseCase = getUserByIdUseCase;
     this.updateUserProfileUseCase = updateUserProfileUseCase;
-    this.registerProfessionalUseCase = registerProfessionalUseCase;
     this.uploadProfileImageUseCase = uploadProfileImageUseCase;
   }
 
@@ -70,34 +67,6 @@ class UserViewModel with ChangeNotifier {
 
     try {
       await updateUserProfileUseCase(user);
-      _errorMessage = null;
-    } catch (e) {
-      _errorMessage = e.toString();
-      rethrow;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> registerProfessional({
-    required String name,
-    required String email,
-    required String password,
-    required String phone,
-    required String profession,
-  }) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await registerProfessionalUseCase.call(
-        name: name,
-        email: email,
-        password: password,
-        phone: phone,
-        profession: profession,
-      );
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
