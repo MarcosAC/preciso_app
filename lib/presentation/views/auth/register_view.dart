@@ -18,15 +18,39 @@ class RegisterViewState extends State<RegisterView> {
   final _confirmPasswordController = TextEditingController();
   final _professionController = TextEditingController();
   bool _isProfessional = false;
+  AuthViewModel? _authViewModel; 
 
   @override
+  void initState() {
+    super.initState();
+    _authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _authViewModel?.addListener(_handleNavigation);
+    });
+  } 
+
+   @override
   void dispose() {
+    _authViewModel?.removeListener(_handleNavigation);
+
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
-    _confirmPasswordController.dispose();
+    _confirmPasswordController.dispose();    
+
     super.dispose();
+  }
+
+  void _handleNavigation() {    
+    if (_authViewModel?.navigationState == AuthNavigation.homeClient) {
+      Navigator.of(context).pushReplacementNamed('/home_client');
+      _authViewModel?.resetNavigationState();
+    } else if (_authViewModel?.navigationState == AuthNavigation.homeProfessional) {
+      Navigator.of(context).pushReplacementNamed('/home_professional');
+      _authViewModel?.resetNavigationState();
+    }
   }
 
   @override

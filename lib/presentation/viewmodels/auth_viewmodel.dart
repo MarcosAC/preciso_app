@@ -1,8 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/domain/usecases/auth_usecases.dart';
+
+enum AuthNavigation {
+  none,
+  homeClient,
+  homeProfessional,
+}
 
 class AuthViewModel with ChangeNotifier {
   late LoginUseCase loginUseCase;
@@ -11,6 +17,20 @@ class AuthViewModel with ChangeNotifier {
   late LogoutUseCase logoutUseCase;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+  
+  AuthNavigation _navigationState = AuthNavigation.none;
+  AuthNavigation get navigationState => _navigationState;
+
+  void resetNavigationState() {
+    _navigationState = AuthNavigation.none;
+  }
+
+  AuthViewModel({
+    required this.loginUseCase,
+    required this.registerClientUseCase,
+    required this.registerProfessionalUseCase,
+    required this.logoutUseCase,
+  });
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -95,7 +115,7 @@ class AuthViewModel with ChangeNotifier {
     required String email,
     required String password,
     required String phone,
-    String? photoUrl,
+    String? photoUrl,   
   }) async {
     _setLoading(true);
     try {
@@ -107,6 +127,10 @@ class AuthViewModel with ChangeNotifier {
         photoUrl: photoUrl,
       );
       _setLoading(false);
+      if (user != null && !user.isProfessional) {
+        _navigationState = AuthNavigation.homeClient;
+        notifyListeners();
+      }
       return user;
     } catch (e) {
       _setError(e.toString());
@@ -137,6 +161,10 @@ class AuthViewModel with ChangeNotifier {
         photoUrl: photoUrl,
       );
       _setLoading(false);
+      if (user != null && user.isProfessional) {
+        _navigationState = AuthNavigation.homeProfessional;
+        notifyListeners();
+      }
       return user;
     } catch (e) {
       _setError(e.toString());
