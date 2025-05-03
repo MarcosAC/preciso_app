@@ -102,18 +102,13 @@ class MyApp extends StatelessWidget {
               (context) =>
                   UploadProfileImageUseCase(context.read<UserRepository>()),
         ),
-
-        // ViewModels
-        ChangeNotifierProxyProvider<AuthRepository, AuthViewModel>(
-          create: (_) => AuthViewModel(),
-          update:
-              (_, authRepo, viewModel) =>
-                  viewModel!..updateDependencies(
-                    loginUseCase: LoginUseCase(authRepo),
-                    registerClientUseCase: RegisterClientUseCase(authRepo),
-                    registerProfessionalUseCase: RegisterProfessionalUseCase(authRepo),
-                    logoutUseCase: LogoutUseCase(authRepo),
-                  ),
+         ChangeNotifierProvider<AuthViewModel>(
+          create: (context) => AuthViewModel(
+            loginUseCase: context.read<LoginUseCase>(),
+            registerClientUseCase: context.read<RegisterClientUseCase>(),
+            registerProfessionalUseCase: context.read<RegisterProfessionalUseCase>(),
+            logoutUseCase: context.read<LogoutUseCase>(),
+          ),
         ),
         ChangeNotifierProvider<ProfileViewModel>(
           create:
@@ -260,9 +255,8 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authViewModel = Provider.of<AuthViewModel>(context);
-
-    return StreamBuilder<UserEntity?>(
-      stream: authViewModel.userStream,
+    return StreamBuilder<UserEntity?>(       
+      stream: authViewModel.userStream,      
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
