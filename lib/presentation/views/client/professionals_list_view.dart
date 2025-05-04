@@ -16,8 +16,7 @@ class ProfessionalsListView extends StatefulWidget {
 class _ProfessionalsListViewState extends State<ProfessionalsListView> {
   @override
   void initState() {
-    super.initState();
-    // Carrega os profissionais quando a tela é iniciada
+    super.initState();    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = Provider.of<ProfessionalViewModel>(context, listen: false);
       viewModel.loadProfessionals(widget.serviceType);

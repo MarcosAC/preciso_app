@@ -30,10 +30,11 @@ class UserRepository implements IUserRepository {
               .where(
                 (entry) =>
                     entry.value['isProfessional'] == true &&
-                    (entry.value['services'] as List<dynamic>?)?.contains(
-                          serviceType,
-                        ) ==
-                        true,
+                    entry.value['profession'] == serviceType,
+                    // (entry.value['services'] as List<dynamic>?)?.contains(
+                    //       serviceType,
+                    //     ) ==
+                    //     true,
               )
               .map(
                 (entry) => UserModel.fromMap({
