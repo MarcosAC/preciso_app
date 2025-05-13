@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:preciso/presentation/views/client/request_service_view.dart';
 import 'package:provider/provider.dart';
 import 'package:preciso/presentation/viewmodels/professional_viewmodel.dart';
 import 'package:preciso/presentation/widgets/professional_card.dart';
@@ -76,8 +77,14 @@ class _ProfessionalsListViewState extends State<ProfessionalsListView> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              _createServiceRequest(context, professional);
+              // Navigator.pop(context);
+              // _createServiceRequest(context, professional);
+               Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RequestServiceView(),
+            ),
+          );
             },
             child: const Text('Confirmar'),
           ),
