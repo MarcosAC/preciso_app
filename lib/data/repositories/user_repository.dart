@@ -13,9 +13,9 @@ class UserRepository implements IUserRepository {
   UserRepository({
     FirebaseAuth? firebaseAuth,
     DatabaseReference? dbRef,
-    FirebaseStorage? firebaseStorage,
+    FirebaseStorage? storage,
   }) : _dbRef = dbRef ?? FirebaseDatabase.instance.ref(),
-       _storage = firebaseStorage ?? FirebaseStorage.instance;
+       _storage = storage ?? FirebaseStorage.instance;
 
   @override
   Future<List<UserModel>> getProfessionalsByService(String serviceType) async {

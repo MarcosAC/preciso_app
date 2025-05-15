@@ -17,9 +17,12 @@ class ProfessionalsListView extends StatefulWidget {
 class _ProfessionalsListViewState extends State<ProfessionalsListView> {
   @override
   void initState() {
-    super.initState();    
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final viewModel = Provider.of<ProfessionalViewModel>(context, listen: false);
+      final viewModel = Provider.of<ProfessionalViewModel>(
+        context,
+        listen: false,
+      );
       viewModel.loadProfessionals(widget.serviceType);
     });
   }
@@ -67,34 +70,40 @@ class _ProfessionalsListViewState extends State<ProfessionalsListView> {
   void _showRequestDialog(BuildContext context, UserModel professional) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Solicitar ${professional.profession}'),
-        content: const Text('Deseja solicitar os serviços deste profissional?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Navigator.pop(context);
-              // _createServiceRequest(context, professional);
-               Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RequestServiceView(),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Solicitar ${professional.profession}'),
+            content: const Text(
+              'Deseja solicitar os serviços deste profissional?',
             ),
-          );
-            },
-            child: const Text('Confirmar'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // _createServiceRequest(context, professional);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RequestServiceView(),
+                    ),
+                  );
+                },
+                child: const Text('Confirmar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _createServiceRequest(BuildContext context, UserModel professional) {
-    final viewModel = Provider.of<ProfessionalViewModel>(context, listen: false);
+    final viewModel = Provider.of<ProfessionalViewModel>(
+      context,
+      listen: false,
+    );
     viewModel.createRequest(
       professionalId: professional.uid,
       serviceType: widget.serviceType,
@@ -104,9 +113,9 @@ class _ProfessionalsListViewState extends State<ProfessionalsListView> {
         );
       },
       onError: (message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $message')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro: $message')));
       },
     );
   }

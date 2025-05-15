@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
           create:
               (context) => ServiceRepository(
                 auth: context.read<FirebaseAuth>(),
-                firestore: context.read<FirebaseFirestore>(),
+                dbRef: context.read<DatabaseReference>(),
                 storage: context.read<FirebaseStorage>(),
               ),
         ),
@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
               (context) => UserRepository(
                 firebaseAuth: context.read<FirebaseAuth>(),
                 dbRef: context.read<DatabaseReference>(),
-                firebaseStorage: context.read<FirebaseStorage>(),
+                storage: context.read<FirebaseStorage>(),
               ),
         ),
 
