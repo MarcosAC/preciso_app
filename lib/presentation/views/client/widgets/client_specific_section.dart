@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:preciso/presentation/views/client/requested_services_view.dart';
 import 'package:provider/provider.dart';
 
 class ClientSpecificSection extends StatefulWidget {
@@ -68,7 +69,30 @@ class _ClientSpecificSectionState extends State<ClientSpecificSection> {
           'Endereços Salvos',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        // Lista de endereços...
+        const SizedBox(height: 16.0),
+        InkWell(
+          onTap: () {            
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RequestedServicesView(services: [],)),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Serviços Solicitados',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios, size: 16.0, color: Colors.grey[700]),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16.0),
       ],
     );
   }
