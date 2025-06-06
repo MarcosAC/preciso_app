@@ -9,8 +9,7 @@ class HomeClientView extends StatelessWidget {
   const HomeClientView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Obtém o userId do AuthViewModel
+  Widget build(BuildContext context) {    
     final userId = Provider.of<AuthViewModel>(context, listen: false).currentUser?.uid ?? '';
 
     return Scaffold(
