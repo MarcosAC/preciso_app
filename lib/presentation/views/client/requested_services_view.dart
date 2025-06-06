@@ -1,10 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
+import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
+import 'package:provider/provider.dart';
 
-class RequestedServicesView extends StatelessWidget {
+class RequestedServicesView extends StatefulWidget {
   final List<ServiceEntity> services;
 
   const RequestedServicesView({super.key, required this.services});
+
+  @override
+  State<RequestedServicesView> createState() => _RequestedServicesViewState();
+}
+
+class _RequestedServicesViewState extends State<RequestedServicesView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadRequestServices();
+    });
+  }
+
+  Future<void> _loadRequestServices() async {
+    if (mounted) {
+      Provider.of<ServiceViewModel>(context, listen: false)
+        .getAvailableRequestsUseCase('Eletricista');     
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,12 +34,12 @@ class RequestedServicesView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Serviços Solicitados'),
       ),
-      body: services.isEmpty
+      body: widget.services.isEmpty
           ? _buildEmptyState()
           : ListView.builder(
-              itemCount: services.length,
+              itemCount: widget.services.length,
               itemBuilder: (context, index) {
-                return _buildServiceCard(services[index]);
+                return _buildServiceCard(widget.services[index]);
               },
             ),
     );
@@ -105,7 +127,7 @@ class RequestedServicesView extends StatelessWidget {
       ),
     );
   }
-  
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
