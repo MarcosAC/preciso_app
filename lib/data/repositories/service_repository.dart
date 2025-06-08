@@ -30,8 +30,7 @@ class ServiceRepository implements IServiceRepository {
                // Garantir que o mapa está corretamente tipado para fromMap
               requests.add(ServiceModel.fromMap(Map<String, dynamic>.from(value)).toEntity());
             } catch (e) {
-              print('Erro mapeando dados do Realtime DB: $e');
-              // Opcionalmente, tratar ou logar erros para itens individuais
+              print('Erro mapeando dados do Realtime DB: $e');              
             }
           }
         });
@@ -41,7 +40,10 @@ class ServiceRepository implements IServiceRepository {
   }
 
   @override
-  Stream<List<ServiceEntity>> getClientRequests(String clientId) {    
+  Stream<List<ServiceEntity>> getClientRequests(String clientId) {  
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception('Usuário não autenticado');
+
     return _dbRef
       .child('serviceRequests')
       .orderByChild('clientId')

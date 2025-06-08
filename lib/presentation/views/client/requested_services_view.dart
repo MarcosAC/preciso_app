@@ -24,24 +24,39 @@ class _RequestedServicesViewState extends State<RequestedServicesView> {
   Future<void> _loadRequestServices() async {
     if (mounted) {
       Provider.of<ServiceViewModel>(context, listen: false)
-        .getAvailableRequestsUseCase('Eletricista');     
+        .getClientRequests('');     
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<ServiceViewModel>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Serviços Solicitados'),
       ),
-      body: widget.services.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              itemCount: widget.services.length,
-              itemBuilder: (context, index) {
-                return _buildServiceCard(widget.services[index]);
-              },
-            ),
+      body: StreamBuilder<List<ServiceEntity>>(
+        stream: viewModel.getClientRequests(''),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Erro: ${snapshot.error}'));            
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final services = snapshot.data!;
+
+          return services.isEmpty
+              ? _buildEmptyState()
+              : ListView.builder(
+                  itemCount: services.length,
+                  itemBuilder: (context, index) {
+                    return _buildServiceCard(services[index]);
+                  },
+                );
+        },)
     );
   }
 

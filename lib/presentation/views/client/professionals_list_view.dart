@@ -83,8 +83,7 @@ class _ProfessionalsListViewState extends State<ProfessionalsListView> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  // _createServiceRequest(context, professional);
+                  Navigator.pop(context);                  
                   Navigator.push(
                     context,
                     MaterialPageRoute(

@@ -31,7 +31,7 @@ class ServiceViewModel with ChangeNotifier {
 
   Stream<List<ServiceEntity>> getClientRequests(String clientId) {
     return getClientRequestsUseCase(clientId);
-  }
+  }  
 
   Stream<List<ServiceEntity>> getAvailableRequests(String serviceType) {
     return getAvailableRequestsUseCase(serviceType);
