@@ -6,18 +6,38 @@ import 'package:preciso/presentation/viewmodels/profile_viewmodel.dart';
 import '../../../views/profile/widgets/profile_app_bar.dart';
 import '../../../views/profile/widgets/user_info_section.dart';
 
-class ClientProfileScreen extends StatelessWidget {
+class ProfessionalProfileScreen extends StatefulWidget {
   final String userId;
 
-  const ClientProfileScreen({super.key, required this.userId});
+  const ProfessionalProfileScreen({super.key, required this.userId});
 
+  @override
+  State<ProfessionalProfileScreen> createState() => _ProfessionalProfileScreenSate();
+}
+
+class _ProfessionalProfileScreenSate extends State<ProfessionalProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfile();
+    });
+  }
+
+  Future<void> _loadProfile() async {
+    if (mounted) {
+      await Provider.of<ProfileViewModel>(context, listen: false)
+          .loadUserProfile(widget.userId);
+    }
+  }
+  
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     
     if (pickedFile != null && context.mounted) {
       await Provider.of<ProfileViewModel>(context, listen: false)
-          .uploadProfileImage(userId, pickedFile.path);
+          .uploadProfileImage(widget.userId, pickedFile.path);
     }
   }
 
@@ -74,7 +94,7 @@ class ClientProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileViewModel = Provider.of<ProfileViewModel>(context, listen: false);
-    profileViewModel.loadUserProfile(userId);
+    profileViewModel.loadUserProfile(widget.userId);
 
     return Scaffold(
       appBar: const ProfileAppBar(title: 'Meu Perfil'),
@@ -91,7 +111,7 @@ class ClientProfileScreen extends StatelessWidget {
                 const Text('Erro ao carregar perfil'),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => profileViewModel.loadUserProfile(userId),
+                  onPressed: () => profileViewModel.loadUserProfile(widget.userId),
                   child: const Text('Tentar novamente'),
                 ),
               ],
