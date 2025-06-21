@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/views/client/requested_services_view.dart';
+import 'package:preciso/presentation/views/professional/service_list_view.dart';
 import 'package:provider/provider.dart';
 
 class ClientSpecificSection extends StatefulWidget {
@@ -71,11 +72,18 @@ class _ClientSpecificSectionState extends State<ClientSpecificSection> {
         ),
         const SizedBox(height: 16.0),
         InkWell(
-          onTap: () {            
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RequestedServicesView()),
-            );
+          onTap: () { 
+            if (widget.user.isProfessional) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ServiceListView()),
+              );              
+            } else {
+               Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RequestedServicesView()),
+              );              
+            }
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 12.0),
