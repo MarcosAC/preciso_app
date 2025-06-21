@@ -75,33 +75,40 @@ class MyApp extends StatelessWidget {
         Provider<LoginUseCase>(
           create: (context) => LoginUseCase(context.read<AuthRepository>()),
         ),
+
         Provider<RegisterClientUseCase>(
           create:
               (context) =>
                   RegisterClientUseCase(context.read<AuthRepository>()),
         ),
+
         Provider<RegisterProfessionalUseCase>(
           create: 
               (context) => 
                   RegisterProfessionalUseCase(context.read<AuthRepository>()),
         ),
+
         Provider<LogoutUseCase>(
           create: (context) => LogoutUseCase(context.read<AuthRepository>()),
         ),
+
         Provider<GetUserByIdUseCase>(
           create:
               (context) => GetUserByIdUseCase(context.read<UserRepository>()),
         ),
+
         Provider<UpdateUserProfileUseCase>(
           create:
               (context) =>
                   UpdateUserProfileUseCase(context.read<UserRepository>()),
         ),
+
         Provider<UploadProfileImageUseCase>(
           create:
               (context) =>
                   UploadProfileImageUseCase(context.read<UserRepository>()),
         ),
+
          ChangeNotifierProvider<AuthViewModel>(
           create: (context) => AuthViewModel(
             loginUseCase: context.read<LoginUseCase>(),
@@ -110,14 +117,13 @@ class MyApp extends StatelessWidget {
             logoutUseCase: context.read<LogoutUseCase>(),
           ),
         ),
+
         ChangeNotifierProvider<ProfileViewModel>(
           create:
               (context) => ProfileViewModel(
                 getUserByIdUseCase: context.read<GetUserByIdUseCase>(),
-                updateUserProfileUseCase:
-                    context.read<UpdateUserProfileUseCase>(),
-                uploadProfileImageUseCase:
-                    context.read<UploadProfileImageUseCase>(),
+                updateUserProfileUseCase: context.read<UpdateUserProfileUseCase>(),
+                uploadProfileImageUseCase:context.read<UploadProfileImageUseCase>(),
                 logoutUseCase: context.read<LogoutUseCase>(),
               ),
         ),
@@ -127,21 +133,11 @@ class MyApp extends StatelessWidget {
           update:
               (_, serviceRepo, viewModel) =>
                   viewModel!..updateDependencies(
-                    getClientRequestsUseCase: GetClientRequestsUseCase(
-                      serviceRepo,
-                    ),
-                    getAvailableRequestsUseCase: GetAvailableRequestsUseCase(
-                      serviceRepo,
-                    ),
-                    createServiceRequestUseCase: CreateServiceRequestUseCase(
-                      serviceRepo,
-                    ),
-                    updateRequestStatusUseCase: UpdateRequestStatusUseCase(
-                      serviceRepo,
-                    ),
-                    rateProfessionalUseCase: RateProfessionalUseCase(
-                      serviceRepo,
-                    ),
+                    getClientRequestsUseCase: GetClientRequestsUseCase(serviceRepo),
+                    getAvailableRequestsUseCase: GetAvailableRequestsUseCase(serviceRepo),
+                    createServiceRequestUseCase: CreateServiceRequestUseCase(serviceRepo),
+                    updateRequestStatusUseCase: UpdateRequestStatusUseCase(serviceRepo),
+                    rateProfessionalUseCase: RateProfessionalUseCase(serviceRepo),
                   ),
         ),
 
@@ -149,10 +145,8 @@ class MyApp extends StatelessWidget {
           UserRepository,
           ServiceRepository,
           ProfessionalViewModel
-        >(
-          create: (_) => ProfessionalViewModel(),
-          update:
-              (_, userRepo, serviceRepo, viewModel) =>
+        >(create: (_) => ProfessionalViewModel(),
+          update:(_, userRepo, serviceRepo, viewModel) =>
                   viewModel!..updateDependencies(
                     userRepository: userRepo,
                     serviceRepository: serviceRepo,
@@ -161,63 +155,28 @@ class MyApp extends StatelessWidget {
 
         ChangeNotifierProxyProvider<UserRepository, UserViewModel>(
           create: (_) => UserViewModel(),
-          update:
-              (_, userRepo, viewModel) =>
+          update:(_, userRepo, viewModel) =>
                   viewModel!..updateDependencies(
-                    getProfessionalsByServiceUseCase:
-                        GetProfessionalsByServiceUseCase(userRepo),
+                    getProfessionalsByServiceUseCase: GetProfessionalsByServiceUseCase(userRepo),
                     getUserByIdUseCase: GetUserByIdUseCase(userRepo),
-                    updateUserProfileUseCase: UpdateUserProfileUseCase(
-                      userRepo,
-                    ),
-                    uploadProfileImageUseCase: UploadProfileImageUseCase(
-                      userRepo,
-                    ),
+                    updateUserProfileUseCase: UpdateUserProfileUseCase(userRepo),
+                    uploadProfileImageUseCase: UploadProfileImageUseCase(userRepo),
                   ),
         ),
 
         // Use Cases individuais
-        Provider<GetUserByIdUseCase>(
-          create:
-              (context) => GetUserByIdUseCase(
-                Provider.of<UserRepository>(context, listen: false),
-              ),
-        ),
-        Provider<UpdateUserProfileUseCase>(
-          create:
-              (context) => UpdateUserProfileUseCase(
-                Provider.of<UserRepository>(context, listen: false),
-              ),
-        ),
-        Provider<UploadProfileImageUseCase>(
-          create:
-              (context) => UploadProfileImageUseCase(
-                Provider.of<UserRepository>(context, listen: false),
-              ),
-        ),
+        Provider<GetUserByIdUseCase>(create: (context) => GetUserByIdUseCase(Provider.of<UserRepository>(context, listen: false))),
+        Provider<UpdateUserProfileUseCase>(create: (context) => UpdateUserProfileUseCase(Provider.of<UserRepository>(context, listen: false))),
+        Provider<UploadProfileImageUseCase>(create: (context) => UploadProfileImageUseCase(Provider.of<UserRepository>(context, listen: false))),
 
         // Profile ViewModel
         ChangeNotifierProvider<ProfileViewModel>(
-          create:
-              (context) => ProfileViewModel(
-                getUserByIdUseCase: Provider.of<GetUserByIdUseCase>(
-                  context,
-                  listen: false,
-                ),
-                updateUserProfileUseCase: Provider.of<UpdateUserProfileUseCase>(
-                  context,
-                  listen: false,
-                ),
-                uploadProfileImageUseCase:
-                    Provider.of<UploadProfileImageUseCase>(
-                      context,
-                      listen: false,
-                    ),
-                logoutUseCase: Provider.of<LogoutUseCase>(
-                  context,
-                  listen: false,
-                ),
-              ),
+          create: (context) => ProfileViewModel(
+            getUserByIdUseCase: Provider.of<GetUserByIdUseCase>(context, listen: false),
+            updateUserProfileUseCase: Provider.of<UpdateUserProfileUseCase>(context,listen: false),
+            uploadProfileImageUseCase: Provider.of<UploadProfileImageUseCase>(context, listen: false),
+            logoutUseCase: Provider.of<LogoutUseCase>(context,listen: false),
+          ),
         ),
       ],
       child: MaterialApp(

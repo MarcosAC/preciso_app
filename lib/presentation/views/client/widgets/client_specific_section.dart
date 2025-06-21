@@ -74,7 +74,7 @@ class _ClientSpecificSectionState extends State<ClientSpecificSection> {
           onTap: () {            
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RequestedServicesView(services: [],)),
+              MaterialPageRoute(builder: (context) => RequestedServicesView()),
             );
           },
           child: Padding(
