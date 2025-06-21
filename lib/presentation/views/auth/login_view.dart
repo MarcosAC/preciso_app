@@ -211,7 +211,7 @@ class LoginViewState extends State<LoginView> {
       if (user != null && mounted) {
         if (user.isProfessional) {
           Navigator.of(context).pushNamedAndRemoveUntil(
-            '/profissional_home',
+            '/home_professional',
             (Route<dynamic> route) => false,
           );
         } else {
