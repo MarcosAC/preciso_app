@@ -1,62 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
+import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class RequestedServicesView extends StatefulWidget {
-  final List<ServiceEntity> services;
+  final List<ServiceEntity>? initialServices;
 
-  const RequestedServicesView({super.key, required this.services});
+  const RequestedServicesView({super.key, this.initialServices});
 
   @override
   State<RequestedServicesView> createState() => _RequestedServicesViewState();
 }
 
-class _RequestedServicesViewState extends State<RequestedServicesView> {
+class _RequestedServicesViewState extends State<RequestedServicesView> { 
+  late ServiceViewModel _serviceViewModel;  
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadRequestServices();
+      _serviceViewModel = Provider.of<ServiceViewModel>(context, listen: false);
     });
-  }
-
-  Future<void> _loadRequestServices() async {
-    if (mounted) {
-      Provider.of<ServiceViewModel>(context, listen: false)
-        .getClientRequests('');     
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<ServiceViewModel>(context);
+    final serviceViewModel = Provider.of<ServiceViewModel>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Serviços Solicitados'),
       ),
-      body: StreamBuilder<List<ServiceEntity>>(
-        stream: viewModel.getClientRequests(''),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Erro: ${snapshot.error}'));            
+      body: Consumer<AuthViewModel>(
+        builder: (context, authViewModel, child) {
+          final currentUser = authViewModel.currentUser;
+          final currentUserId = currentUser?.uid;
+
+          if (currentUserId == null) {            
+            return const Center(
+              child: Text(
+                  'Por favor, faça login para ver seus serviços solicitados.'),
+            );
           }
 
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          return StreamBuilder<List<ServiceEntity>>(
+            stream: serviceViewModel.getClientRequests(currentUserId),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Erro ao carregar serviços: ${snapshot.error}'));
+              }
 
-          final services = snapshot.data!;
+              if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          return services.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  itemCount: services.length,
-                  itemBuilder: (context, index) {
-                    return _buildServiceCard(services[index]);
-                  },
-                );
-        },)
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return _buildEmptyState();
+              }
+
+              final services = snapshot.data!;
+
+              return ListView.builder(
+                itemCount: services.length,
+                itemBuilder: (context, index) {
+                  return _buildServiceCard(services[index]);
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
