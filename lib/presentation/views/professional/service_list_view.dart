@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
+import 'package:preciso/presentation/views/professional/profile/pro_profile_screen.dart';
 import 'package:provider/provider.dart';
 
 class ServiceListView extends StatefulWidget {
@@ -27,10 +28,25 @@ class _ServiceListViewState extends State<ServiceListView> {
 
   @override
   Widget build(BuildContext context) {
+    final userId = Provider.of<AuthViewModel>(context, listen: false).currentUser?.uid ?? '';
     final serviceViewModel = Provider.of<ServiceViewModel>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Serviços Disponíveis')),
+      appBar: AppBar(
+        title: const Text('Serviços Disponíveis'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfessionalProfileScreen(userId: userId),
+                ),
+              );
+            },
+          ),
+        ],),
       body: Consumer<AuthViewModel>(
         builder: (context, authViewMolde, child) {
           final currentUser = authViewMolde.currentUser;
