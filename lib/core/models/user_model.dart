@@ -12,7 +12,7 @@ class UserModel {
   final double rating;
   final int completedServices;
   final String? photoUrl;
-  final DateTime createdAt;
+  final DateTime? createdAt;
 
   UserModel({
     required this.uid,
@@ -25,7 +25,7 @@ class UserModel {
     this.rating = 0,
     this.completedServices = 0,
     this.photoUrl,
-    required this.createdAt,
+    this.createdAt,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -58,7 +58,7 @@ class UserModel {
       'rating': rating,
       'completedServices': completedServices,
       if (photoUrl != null) 'photoUrl': photoUrl,
-      'createdAt': createdAt.millisecondsSinceEpoch,
+      'createdAt': createdAt?.millisecondsSinceEpoch,
     };
   }
 

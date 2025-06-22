@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
 import 'package:preciso/presentation/views/auth/register_view.dart';
+import 'package:preciso/presentation/views/professional/service_list_view.dart';
 import 'package:provider/provider.dart';
 import 'package:preciso/data/repositories/auth_repository.dart';
 import 'package:preciso/data/repositories/service_repository.dart';
@@ -227,7 +228,7 @@ class AuthWrapper extends StatelessWidget {
 
         if (user != null) {
           return user.isProfessional
-              ? const HomeProfessionalView()
+              ? const ServiceListView() //HomeProfessionalView()
               : const HomeClientView();
         }
         return const LoginView();

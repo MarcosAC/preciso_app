@@ -12,7 +12,7 @@ class UserEntity {
   final int completedServices;
   final String? photoUrl;
   final List<String> services;
-  final DateTime createdAt;
+  final DateTime? createdAt;
 
   UserEntity({
     required this.uid,
@@ -25,7 +25,9 @@ class UserEntity {
     this.completedServices = 0,
     this.photoUrl,
     this.services = const [],
-    required this.createdAt,
+    this.createdAt,
+    
+    //required this.createdAt, -> Retirei a data de cadastro como required até resolver o problema da data
   });
 
   factory UserEntity.fromMap(Map<String, dynamic> map) {
@@ -65,7 +67,9 @@ class UserEntity {
       completedServices: data['completedServices'] ?? 0,
       photoUrl: data['photoUrl'] ?? user.photoURL,
       services: List<String>.from(data['services'] ?? []),
-      createdAt: data['createdAt']?.toDateTime() ?? DateTime.now(),
+      
+      //Comentei a data de cadastro até resolver o problema da data
+      //createdAt: data['createdAt']?.toDateTime() ?? DateTime.now(),
     );
   }
 
@@ -100,7 +104,7 @@ class UserEntity {
       'completedServices': completedServices,
       if (photoUrl != null) 'photoUrl': photoUrl,
       'services': services,
-      'createdAt': createdAt.toFirebaseTimestamp(),
+      'createdAt': createdAt?.toFirebaseTimestamp(),
     };
   }
 
