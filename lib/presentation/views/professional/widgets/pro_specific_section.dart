@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
+import 'package:preciso/presentation/views/professional/service_list_view.dart';
 
 class ProSpecificSection extends StatefulWidget {
   final UserEntity user;
@@ -38,11 +39,37 @@ class _ProSpecificSectionState extends State<ProSpecificSection> {
           ],
         ),
         const SizedBox(height: 16),
-        const Text('Portfólio', style: TextStyle(fontWeight: FontWeight.bold)),
-        // Galeria de trabalhos...
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ServiceListView()),
+            );             
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Row(
+              children: [
+                Expanded(child: const Text('Serviços Aceitos', style: TextStyle(fontWeight: FontWeight.bold))),
+                Icon(Icons.arrow_forward_ios, size: 16.0, color: Colors.grey[700]),
+              ])),
+        ),
         const SizedBox(height: 16),
-        const Text('Horários', style: TextStyle(fontWeight: FontWeight.bold)),
-        // Calendário de disponibilidade...
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ServiceListView()),
+            );             
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Row(
+              children: [
+                Expanded(child: const Text('Serviços Disponíveis', style: TextStyle(fontWeight: FontWeight.bold))),
+                Icon(Icons.arrow_forward_ios, size: 16.0, color: Colors.grey[700]),
+              ])),
+            )
       ],
     );
   }
