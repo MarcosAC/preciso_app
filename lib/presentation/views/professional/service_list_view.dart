@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
+import 'package:preciso/presentation/views/client/requested_services_view.dart';
 import 'package:preciso/presentation/views/professional/profile/pro_profile_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -78,7 +79,11 @@ class _ServiceListViewState extends State<ServiceListView> {
               return ListView.builder(
                 itemCount: services.length,
                 itemBuilder: (context, index) {
-                  return _buildServiceCard(services[index]);
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (contex) => RequestedServicesView()));
+                    },
+                    child: _buildServiceCard(services[index]));
                 },
               );
             });
