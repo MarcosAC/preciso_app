@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
-import 'package:preciso/presentation/views/client/requested_services_view.dart';
+import 'package:preciso/presentation/views/professional/detail_service_view.dart';
 import 'package:preciso/presentation/views/professional/profile/pro_profile_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -81,7 +81,8 @@ class _ServiceListViewState extends State<ServiceListView> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (contex) => RequestedServicesView()));
+                      // Implementar navegação para a tela de detalhes do serviço
+                      Navigator.push(context, MaterialPageRoute(builder: (contex) => DetailServiceView(service: services[index])));
                     },
                     child: _buildServiceCard(services[index]));
                 },
@@ -100,7 +101,7 @@ class _ServiceListViewState extends State<ServiceListView> {
           Icon(Icons.assignment, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           const Text(
-            'Nenhum serviço solicitado ainda',
+            'Nenhum serviço disponivel ainda',
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
         ],
@@ -182,7 +183,7 @@ class _ServiceListViewState extends State<ServiceListView> {
   String _translateStatus(String status) {
     const statusMap = {
       'pending': 'Pendente',
-      'confirmed': 'Confirmado',
+      'accepted': 'Aceito',
       'completed': 'Concluído',
       'canceled': 'Cancelado',
     };
@@ -191,13 +192,13 @@ class _ServiceListViewState extends State<ServiceListView> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'pendente':
+      case 'pending':
         return Colors.orange;
-      case 'confirmado':
+      case 'accepted':
         return Colors.blue;
-      case 'concluído':
+      case 'completed':
         return Colors.green;
-      case 'cancelado':
+      case 'canceled':
         return Colors.red;
       default:
         return Colors.grey;
