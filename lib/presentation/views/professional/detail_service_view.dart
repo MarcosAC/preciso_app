@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
-// Mantidos caso precise de dados do usuário logado ou integrações futuras
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -24,20 +23,49 @@ class _DetailServiceViewState extends State<DetailServiceView> {
     _currentStatus = widget.service.status;
   }
 
-  void _updateServiceStatus(String newStatus) {
+  void _updateServiceStatus(String newStatus) async {
+    // Primeiro, atualiza o estado local para a UI responder imediatamente
     setState(() {
       _currentStatus = newStatus;
     });
 
+    // Mostra um feedback inicial enquanto a operação real acontece
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Serviço ${_translateStatus(newStatus)}!'),
-        duration: const Duration(seconds: 2),
+        content: Text('Atualizando serviço para ${_translateStatus(newStatus)}...'),
+        duration: const Duration(seconds: 2), // Pode ser um pouco mais curto para feedback inicial
       ),
     );
 
-    // Em um cenário real, você chamaria seu ViewModel aqui
-    // para persistir essa mudança no banco de dados.
+    // --- Chamada REAL ao ViewModel para persistir a mudança ---
+    // Acessa o ServiceViewModel usando Provider (listen: false pois só vamos chamar um método)
+    final serviceViewModel = Provider.of<ServiceViewModel>(context, listen: false);
+
+    try {
+      // Chama o método do ViewModel que, por sua vez, usará o UpdateRequestStatusUseCase
+      await serviceViewModel.updateRequestStatus(widget.service.id, newStatus);
+      
+      // Se a atualização for bem-sucedida no backend
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Status do serviço atualizado com sucesso para ${_translateStatus(newStatus)}!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+    } catch (e) {
+      // Se houver um erro na atualização
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao atualizar o serviço: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      // Opcional: Reverter o estado da UI se a atualização falhar no backend
+      setState(() {
+        _currentStatus = widget.service.status; // Volta ao status original para consistência
+      });
+    }
   }
 
   @override
@@ -105,7 +133,6 @@ class _DetailServiceViewState extends State<DetailServiceView> {
 
   // --- Widgets de Layout ---
 
-  // Agora aceita a cor como parâmetro
   Widget _buildServiceHeader(ServiceEntity service, Color backgroundColor) {
     return Container(
       width: double.infinity,
@@ -116,7 +143,8 @@ class _DetailServiceViewState extends State<DetailServiceView> {
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            // Cor ajustada para hexadecimal com opacidade
+            color: const Color(0x1A000000), // 0x1A é 10% de FF (opacidade total)
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -239,8 +267,9 @@ class _DetailServiceViewState extends State<DetailServiceView> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
+    // Os botões só aparecem se o status atual for 'pending'
     if (_currentStatus != 'pending') {
-      return const SizedBox.shrink();
+      return const SizedBox.shrink(); // Widget vazio se não for 'pending'
     }
 
     return Padding(
@@ -250,7 +279,7 @@ class _DetailServiceViewState extends State<DetailServiceView> {
         children: [
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () => _updateServiceStatus('confirmed'),
+              onPressed: () => _updateServiceStatus('confirmed'), // Chama para confirmar
               icon: const Icon(Icons.check_circle_outline),
               label: const Text('Aceitar', style: TextStyle(fontSize: 16)),
               style: ElevatedButton.styleFrom(
@@ -264,7 +293,7 @@ class _DetailServiceViewState extends State<DetailServiceView> {
           const SizedBox(width: 15),
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () => _updateServiceStatus('rejected'),
+              onPressed: () => _updateServiceStatus('rejected'), // Chama para rejeitar
               icon: const Icon(Icons.cancel_outlined),
               label: const Text('Recusar', style: TextStyle(fontSize: 16)),
               style: ElevatedButton.styleFrom(
@@ -314,194 +343,3 @@ class _DetailServiceViewState extends State<DetailServiceView> {
     }
   }
 }
-
-// import 'package:flutter/material.dart';
-// import 'package:preciso/domain/entities/service_entity.dart';
-// import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
-// import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
-// import 'package:provider/provider.dart';
-
-// class DetailServiceView extends StatefulWidget {
-//   final List<ServiceEntity>? initialServices;
-
-//   const DetailServiceView({super.key, this.initialServices});
-
-//   @override
-//   State<DetailServiceView> createState() => _DetailServiceViewState();
-// }
-
-// class _DetailServiceViewState extends State<DetailServiceView> { 
-//   late ServiceViewModel _serviceViewModel;  
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       _serviceViewModel = Provider.of<ServiceViewModel>(context, listen: false);
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final serviceViewModel = Provider.of<ServiceViewModel>(context);
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Detalhe Serviço'),
-//       ),
-//       body: Consumer<AuthViewModel>(
-//         builder: (context, authViewModel, child) {
-//           final currentUser = authViewModel.currentUser;
-//           final currentUserId = currentUser?.uid;
-
-//           if (currentUserId == null) {            
-//             return const Center(
-//               child: Text(
-//                   'Por favor, faça login para ver seus serviços solicitados.'),
-//             );
-//           }
-
-//           return _buildServiceCard();
-
-//           // return StreamBuilder<List<ServiceEntity>>(
-//           //   stream: serviceViewModel.getClientRequests(currentUserId),
-//           //   builder: (context, snapshot) {
-//           //     if (snapshot.hasError) {
-//           //       return Center(child: Text('Erro ao carregar serviços: ${snapshot.error}'));
-//           //     }
-
-//           //     if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-//           //       return const Center(child: CircularProgressIndicator());
-//           //     }
-
-//           //     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//           //       return _buildEmptyState();
-//           //     }
-
-//           //     final services = snapshot.data!;
-
-//           //     return ListView.builder(
-//           //       itemCount: services.length,
-//           //       itemBuilder: (context, index) {
-//           //         return _buildServiceCard(services[index]);
-//           //       },
-//           //     );
-//           //   },
-//           // );
-//         },
-//       ),
-//     );
-//   }
-
-//   Widget _buildEmptyState() {
-//     return Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Icon(Icons.assignment, size: 64, color: Colors.grey[400]),
-//           const SizedBox(height: 16),
-//           const Text(
-//             'Nenhum serviço solicitado ainda',
-//             style: TextStyle(fontSize: 16, color: Colors.grey),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildServiceCard(/*ServiceEntity service*/) {
-//     return Card(
-//       margin: const EdgeInsets.all(8),
-//       child: Padding(
-//         padding: const EdgeInsets.all(12),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 Text('Eletricista',
-//                   //service.serviceType,
-//                   style: const TextStyle(
-//                     fontWeight: FontWeight.bold,
-//                     fontSize: 16,
-//                   ),
-//                 ),
-//                 Chip(
-//                   label: Text('Pendente',
-//                    // _translateStatus(service.status),
-//                     style: const TextStyle(color: Colors.white),
-//                   ),
-//                   backgroundColor: _getStatusColor('pending'),
-//                 ),
-//               ],
-//             ),
-//             const SizedBox(height: 8),
-//             if (service.price != null)
-//               Text(
-//                 'Preço: R\$${service.price!.toStringAsFixed(2)}',
-//                 style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.w500),
-//               ),
-//             const SizedBox(height: 8),
-//             Text(
-//               'Endereço: ${service.address}',
-//               style: TextStyle(color: Colors.grey[600]),
-//             ),
-//             const SizedBox(height: 8),
-//             Text(
-//               'Data: ${_formatDate(service.requestDate)}',
-//               style: TextStyle(color: Colors.grey[600]),
-//             ),
-//             const SizedBox(height: 8),
-//             Text(
-//               'Descrição: ${service.description}',
-//               style: TextStyle(color: Colors.grey[600]),
-//             ),
-//             if (service.rating != null) ...[
-//               const SizedBox(height: 8),
-//               Row(
-//                 children: [
-//                   const Icon(Icons.star, color: Colors.amber, size: 16),
-//                   const SizedBox(width: 4),
-//                   Text(
-//                     'Avaliação: ${service.rating!.toStringAsFixed(1)}',
-//                     style: TextStyle(color: Colors.grey[600]),
-//                   ),
-//                 ],
-//               ),
-//             ],
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   String _formatDate(DateTime date) {
-//     return '${date.day}/${date.month}/${date.year}';
-//   }
-
-//   String _translateStatus(String status) {
-//     const statusMap = {
-//       'pending': 'Pendente',
-//       'confirmed': 'Confirmado',
-//       'completed': 'Concluído',
-//       'canceled': 'Cancelado',
-//     };
-//     return statusMap[status.toLowerCase()] ?? status;
-//   }
-
-//   Color _getStatusColor(String status) {
-//     switch (status.toLowerCase()) {
-//       case 'pendente':
-//         return Colors.orange;
-//       case 'confirmado':
-//         return Colors.blue;
-//       case 'concluído':
-//         return Colors.green;
-//       case 'cancelado':
-//         return Colors.red;
-//       default:
-//         return Colors.grey;
-//     }
-//   }
-// }
