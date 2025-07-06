@@ -84,7 +84,7 @@ class ServiceRepository implements IServiceRepository {
   }
 
   @override
-  Future<void> updateRequestStatus(String requestId, String status) async {
+  Future<void> updateRequestStatus(String requestId, String professionalId, String status) async {
     try {
       await _dbRef
           .child('serviceRequests')

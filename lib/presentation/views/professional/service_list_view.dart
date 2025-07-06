@@ -81,7 +81,8 @@ class _ServiceListViewState extends State<ServiceListView> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (contex) => DetailServiceView(service: services[index])));
+                      Navigator.push(context, MaterialPageRoute(builder: (contex) => 
+                        DetailServiceView(service: services[index], professionalId: userId,)));
                     },
                     child: _buildServiceCard(services[index]));
                 },

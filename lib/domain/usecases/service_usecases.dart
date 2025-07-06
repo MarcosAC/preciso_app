@@ -36,8 +36,8 @@ class UpdateRequestStatusUseCase {
 
   UpdateRequestStatusUseCase(this._repository);
 
-  Future<void> call(String requestId, String status) {
-    return _repository.updateRequestStatus(requestId, status);
+  Future<void> call(String requestId, String professionalId, String status) {
+    return _repository.updateRequestStatus(requestId, professionalId, status);
   }
 }
 

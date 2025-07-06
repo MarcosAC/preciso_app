@@ -110,11 +110,11 @@ class ProfessionalViewModel with ChangeNotifier {
   }
   // --- FIM DA ALTERAÇÃO ---
 
-  Future<void> updateServiceStatusForProfessional(String requestId, String newStatus) async {
+  Future<void> updateServiceStatusForProfessional(String requestId, professionalId, String newStatus) async {
     _isLoading = true;
     notifyListeners();
     try {
-      await _updateRequestStatusUseCase.call(requestId, newStatus);
+      await _updateRequestStatusUseCase.call(requestId, professionalId, newStatus);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();

@@ -6,8 +6,9 @@ import 'package:provider/provider.dart';
 
 class DetailServiceView extends StatefulWidget {
   final ServiceEntity service;
+  final String professionalId;
 
-  const DetailServiceView({super.key, required this.service});
+  const DetailServiceView({super.key, required this.service, required this.professionalId});
 
   @override
   State<DetailServiceView> createState() => _DetailServiceViewState();
@@ -43,7 +44,7 @@ class _DetailServiceViewState extends State<DetailServiceView> {
 
     try {
       // Chama o método do ViewModel que, por sua vez, usará o UpdateRequestStatusUseCase
-      await serviceViewModel.updateRequestStatus(widget.service.id, newStatus);
+      await serviceViewModel.updateRequestStatus(widget.service.id, widget.professionalId, newStatus);
       
       // Se a atualização for bem-sucedida no backend
       ScaffoldMessenger.of(context).showSnackBar(

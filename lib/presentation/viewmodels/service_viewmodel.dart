@@ -51,13 +51,13 @@ class ServiceViewModel with ChangeNotifier {
   }
 
   // Este é o método que será chamado da DetailServiceView
-  Future<void> updateRequestStatus(String requestId, String status) async {
+  Future<void> updateRequestStatus(String requestId, String professionalId, String status) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await updateRequestStatusUseCase(requestId, status);
+      await updateRequestStatusUseCase(requestId, professionalId, status);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
