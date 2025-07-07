@@ -46,7 +46,7 @@ class ServiceRepository implements IServiceRepository {
 
     return _dbRef
       .child('serviceRequests')
-      .orderByChild('clientId')
+      .orderByChild('professionalId')
       .equalTo(clientId)
       .onValue
       .map((event) {
@@ -89,7 +89,7 @@ class ServiceRepository implements IServiceRepository {
       await _dbRef
           .child('serviceRequests')
           .child(requestId)
-          .update({'status': status});
+          .update({'status': status, 'professionalId' : professionalId});
     } catch (e) {
       throw Exception('Falha ao atualizar status da solicitação: $e');
     }
