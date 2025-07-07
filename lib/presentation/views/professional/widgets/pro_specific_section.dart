@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/user_entity.dart';
-import 'package:preciso/presentation/views/client/requested_services_view.dart';
+import 'package:preciso/presentation/views/professional/requested_services_view.dart';
 import 'package:preciso/presentation/views/professional/service_list_view.dart';
 
 class ProSpecificSection extends StatefulWidget {
