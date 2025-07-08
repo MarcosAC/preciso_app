@@ -25,6 +25,14 @@ class _DetailServiceViewState extends State<DetailServiceView> {
   }
 
   void _updateServiceStatus(String newStatus) async {
+    // 1. Capturar o ServiceViewModel ANTES do async gap
+    // Isso garante que você está usando um BuildContext válido no momento da captura.
+    final serviceViewModel = Provider.of<ServiceViewModel>(context, listen: false);
+
+    // 2. Capturar o ScaffoldMessenger ANTES do async gap
+    // Isso também previne o uso de um BuildContext inválido para mostrar o SnackBar.
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     // Primeiro, atualiza o estado local para a UI responder imediatamente
     setState(() {
       _currentStatus = newStatus;
@@ -40,23 +48,23 @@ class _DetailServiceViewState extends State<DetailServiceView> {
 
     // --- Chamada REAL ao ViewModel para persistir a mudança ---
     // Acessa o ServiceViewModel usando Provider (listen: false pois só vamos chamar um método)
-    final serviceViewModel = Provider.of<ServiceViewModel>(context, listen: false);
+    // final serviceViewModel = Provider.of<ServiceViewModel>(context, listen: false);
 
     try {
       // Chama o método do ViewModel que, por sua vez, usará o UpdateRequestStatusUseCase
       await serviceViewModel.updateRequestStatus(widget.service.id, widget.professionalId, newStatus);
-      
+          
       // Se a atualização for bem-sucedida no backend
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text('Status do serviço atualizado com sucesso para ${_translateStatus(newStatus)}!'),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.blue,
         ),
       );
 
     } catch (e) {
       // Se houver um erro na atualização
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text('Erro ao atualizar o serviço: $e'),
           backgroundColor: Colors.red,
@@ -284,7 +292,7 @@ class _DetailServiceViewState extends State<DetailServiceView> {
               icon: const Icon(Icons.check_circle_outline),
               label: const Text('Aceitar', style: TextStyle(fontSize: 16)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -332,9 +340,9 @@ class _DetailServiceViewState extends State<DetailServiceView> {
       case 'pending':
         return Colors.orange[700]!; // Laranja para pendente
       case 'confirmed':
-        return Colors.green[700]!; // Verde para confirmado
+        return Colors.blue[700]!; // Verde para confirmado
       case 'completed':
-        return Colors.blue[700]!; // Azul para concluído
+        return Colors.green[700]!; // Azul para concluído
       case 'canceled':
         return Colors.grey[700]!; // Cinza para cancelado
       case 'rejected':
