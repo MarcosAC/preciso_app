@@ -180,13 +180,15 @@ class _RequestedServicesViewState extends State<RequestedServicesView> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'pendente':
+      case 'pending':
         return Colors.orange;
-      case 'confirmado':
+      case 'confirmed':
         return Colors.blue;
-      case 'concluído':
+      case 'completed':
         return Colors.green;
-      case 'cancelado':
+      case 'canceled':
+        return Colors.red;
+      case 'rejected':
         return Colors.red;
       default:
         return Colors.grey;
