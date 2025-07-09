@@ -277,9 +277,9 @@ class _DetailServiceViewState extends State<DetailServiceView> {
 
   Widget _buildActionButtons(BuildContext context) {
     // Os botões só aparecem se o status atual for 'pending'
-    if (_currentStatus != 'pending') {
-      return const SizedBox.shrink(); // Widget vazio se não for 'pending'
-    }
+    // if (_currentStatus != 'pending') {
+    //   return const SizedBox.shrink(); // Widget vazio se não for 'pending'
+    // }
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -288,11 +288,17 @@ class _DetailServiceViewState extends State<DetailServiceView> {
         children: [
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () => _updateServiceStatus('confirmed'), // Chama para confirmar
+              onPressed: () {
+                if (_currentStatus == 'pending') {
+                  _updateServiceStatus('confirmed');
+                } else if (_currentStatus == 'confirmed') {
+                  _updateServiceStatus('completed');
+                }               
+              }, // Chama para confirmar
               icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Aceitar', style: TextStyle(fontSize: 16)),
+              label: Text(_currentStatus == 'confirmed' ? 'Concluído' : 'Aceitar', style: TextStyle(fontSize: 16)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: _currentStatus == 'confirmed' ? Colors.green : Colors.blue,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -304,9 +310,9 @@ class _DetailServiceViewState extends State<DetailServiceView> {
             child: ElevatedButton.icon(
               onPressed: () => _updateServiceStatus('rejected'), // Chama para rejeitar
               icon: const Icon(Icons.cancel_outlined),
-              label: const Text('Recusar', style: TextStyle(fontSize: 16)),
+              label: Text(_currentStatus == 'confirmed' ? 'Cancelar' : 'Recusar'  , style: TextStyle(fontSize: 16)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: _currentStatus == 'canceled' ? Colors.grey[700] : Colors.red,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
