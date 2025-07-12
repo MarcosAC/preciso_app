@@ -37,6 +37,24 @@ class _ProSpecificSectionState extends State<ProSpecificSection> {
             const SizedBox(width: 16),
             const Icon(Icons.work),
             Text('${widget.user.completedServices} serviços'),
+            InkWell(
+              onTap: widget.onLogout,
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.logout, size: 16, color: Colors.red),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Sair',
+                      style: TextStyle(fontSize: 12, color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),

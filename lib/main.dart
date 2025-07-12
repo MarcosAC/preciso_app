@@ -197,7 +197,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginView(),
           '/home_client': (context) => const HomeClientView(),
           '/home_professional': (context) => const HomeProfessionalView(),
-          '/register': (context) => const RegisterView(),
+          '/service_list': (context) => const ServiceListView(),
           '/client_profile': (context) => ClientProfileScreen(
             userId: Provider.of<AuthViewModel>(context, listen: false).currentUser?.uid ?? '',
           ),
