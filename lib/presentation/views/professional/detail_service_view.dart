@@ -1,6 +1,6 @@
+
 import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
-import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -124,8 +124,8 @@ class _DetailServiceViewState extends State<DetailServiceView> {
                     title: 'Informações Adicionais',
                     icon: Icons.person_outline,
                     children: [
-                      _buildDetailRow(Icons.perm_identity, 'ID do Cliente', service.clientId),
-                      _buildDetailRow(Icons.account_circle_outlined, 'Seu ID de Profissional', service.professionalId),
+                      _buildDetailRow(Icons.perm_identity, 'Nome do Cliente', service.clientName ?? 'Nome indisponível'),
+                      _buildDetailRow(Icons.account_circle_outlined, 'Nome do Profissional', service.professionalName ?? 'Nome indisponível'),
                       if (service.rating != null && service.rating! > 0)
                         _buildRatingRow(service.rating!),
                     ],
