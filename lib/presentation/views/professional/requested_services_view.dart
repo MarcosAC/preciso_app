@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:preciso/domain/entities/service_entity.dart';
 import 'package:preciso/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:preciso/presentation/viewmodels/service_viewmodel.dart';
+import 'package:preciso/presentation/views/professional/detail_service_view.dart';
 import 'package:provider/provider.dart';
 
 class RequestedServicesView extends StatefulWidget {
@@ -26,11 +27,12 @@ class _RequestedServicesViewState extends State<RequestedServicesView> {
 
   @override
   Widget build(BuildContext context) {
+    final userId = Provider.of<AuthViewModel>(context, listen: false).currentUser?.uid ?? '';
     final serviceViewModel = Provider.of<ServiceViewModel>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Serviços Solicitados'),
+        title: const Text('Serviços Aceitos'),
       ),
       body: Consumer<AuthViewModel>(
         builder: (context, authViewModel, child) {
@@ -64,7 +66,12 @@ class _RequestedServicesViewState extends State<RequestedServicesView> {
               return ListView.builder(
                 itemCount: services.length,
                 itemBuilder: (context, index) {
-                  return _buildServiceCard(services[index]);
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (contex) => 
+                        DetailServiceView(service: services[index], professionalId: userId,)));
+                    },
+                    child: _buildServiceCard(services[index]));
                 },
               );
             },
@@ -173,13 +180,15 @@ class _RequestedServicesViewState extends State<RequestedServicesView> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'pendente':
+      case 'pending':
         return Colors.orange;
-      case 'confirmado':
+      case 'confirmed':
         return Colors.blue;
-      case 'concluído':
+      case 'completed':
         return Colors.green;
-      case 'cancelado':
+      case 'canceled':
+        return Colors.red;
+      case 'rejected':
         return Colors.red;
       default:
         return Colors.grey;

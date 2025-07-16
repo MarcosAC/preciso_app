@@ -30,7 +30,7 @@ class _RequestedServicesViewState extends State<RequestedServicesView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Serviços Solicitados'),
+        title: const Text('Serviços Aceitos'),
       ),
       body: Consumer<AuthViewModel>(
         builder: (context, authViewModel, child) {

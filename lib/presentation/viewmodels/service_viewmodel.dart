@@ -3,35 +3,31 @@ import 'package:preciso/domain/entities/service_entity.dart';
 import 'package:preciso/domain/usecases/service_usecases.dart';
 
 class ServiceViewModel with ChangeNotifier {
-  late GetClientRequestsUseCase getClientRequestsUseCase;
-  late GetAvailableRequestsUseCase getAvailableRequestsUseCase;
-  late CreateServiceRequestUseCase createServiceRequestUseCase;
-  late UpdateRequestStatusUseCase updateRequestStatusUseCase;
-  late RateProfessionalUseCase rateProfessionalUseCase;
+  // Agora são final e recebem valores no construtor
+  final GetClientRequestsUseCase getClientRequestsUseCase;
+  final GetAvailableRequestsUseCase getAvailableRequestsUseCase;
+  final CreateServiceRequestUseCase createServiceRequestUseCase;
+  final UpdateRequestStatusUseCase updateRequestStatusUseCase;
+  final RateProfessionalUseCase rateProfessionalUseCase;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-  
-  void updateDependencies({
-    required GetClientRequestsUseCase getClientRequestsUseCase,
-    required GetAvailableRequestsUseCase getAvailableRequestsUseCase,
-    required CreateServiceRequestUseCase createServiceRequestUseCase,
-    required UpdateRequestStatusUseCase updateRequestStatusUseCase,
-    required RateProfessionalUseCase rateProfessionalUseCase,
-  }) {
-    this.getClientRequestsUseCase = getClientRequestsUseCase;
-    this.getAvailableRequestsUseCase = getAvailableRequestsUseCase;
-    this.createServiceRequestUseCase = createServiceRequestUseCase;
-    this.updateRequestStatusUseCase = updateRequestStatusUseCase;
-    this.rateProfessionalUseCase = rateProfessionalUseCase;
-  }
+
+  // Construtor que injeta todas as dependências (use cases)
+  ServiceViewModel({
+    required this.getClientRequestsUseCase,
+    required this.getAvailableRequestsUseCase,
+    required this.createServiceRequestUseCase,
+    required this.updateRequestStatusUseCase,
+    required this.rateProfessionalUseCase,
+  });
 
   Stream<List<ServiceEntity>> getClientRequests(String clientId) {
     return getClientRequestsUseCase(clientId);
-  }  
+  }
 
   Stream<List<ServiceEntity>> getAvailableRequests(String serviceType) {
     return getAvailableRequestsUseCase(serviceType);
@@ -53,14 +49,15 @@ class ServiceViewModel with ChangeNotifier {
       notifyListeners();
     }
   }
- 
-  Future<void> updateRequestStatus(String requestId, String status) async {
+
+  // Este é o método que será chamado da DetailServiceView
+  Future<void> updateRequestStatus(String requestId, String professionalId, String status) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await updateRequestStatusUseCase(requestId, status);
+      await updateRequestStatusUseCase(requestId, professionalId, status);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();

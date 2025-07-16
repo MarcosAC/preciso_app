@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:preciso/presentation/views/client/widgets/client_specific_section.dart';
 import 'package:preciso/presentation/views/professional/widgets/pro_specific_section.dart';
 import 'package:provider/provider.dart';
 import 'package:preciso/presentation/viewmodels/profile_viewmodel.dart';
